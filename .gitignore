@@ -1,0 +1,27 @@
+@"
+# Secrets
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Backend (Maven)
+backend/target/
+
+# Web (Next.js)
+web/node_modules/
+web/.next/
+web/out/
+
+# Mobile (Flutter)
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+"@ | Set-Content .gitignore
