@@ -6,10 +6,9 @@ import { NavItem, RoleShell } from "./RoleShell";
 const nav: NavItem[] = [
   { href: "/admin/professors", label: "Professeurs" },
   { href: "/admin/students", label: "Étudiants" },
-  { href: "#classes", label: "Classes", soon: true },
-  { href: "#sections", label: "Sections", soon: true },
-  { href: "#subjects", label: "Matières", soon: true },
-  { href: "#enrollments", label: "Inscriptions", soon: true },
+  { href: "/admin/classes", label: "Classes" },
+  { href: "/admin/subjects", label: "Matières" },
+  { href: "/admin/enrollments", label: "Inscriptions" },
   { href: "#timetables", label: "Emplois du temps", soon: true },
   { href: "#grades", label: "Notes", soon: true },
   { href: "#announcements", label: "Annonces", soon: true },
