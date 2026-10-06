@@ -9,7 +9,7 @@ const nav: NavItem[] = [
   { href: "/admin/classes", label: "Classes" },
   { href: "/admin/subjects", label: "Matières" },
   { href: "/admin/enrollments", label: "Inscriptions" },
-  { href: "#timetables", label: "Emplois du temps", soon: true },
+  { href: "/admin/timetables", label: "Emplois du temps" },
   { href: "#grades", label: "Notes", soon: true },
   { href: "#announcements", label: "Annonces", soon: true },
   { href: "#stats", label: "Statistiques", soon: true },

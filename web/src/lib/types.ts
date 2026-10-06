@@ -17,3 +17,28 @@ export type Course = {
   professorName: string;
   documents: DocInfo[];
 };
+
+export type Timetable = {
+  id: number;
+  academicYear: string;
+  semester: string;
+  sessionCount: number;
+};
+
+export type Session = {
+  id: number;
+  timetableId: number;
+  academicYear: string;
+  semester: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  room: string | null;
+  classId: number;
+  className: string;
+  subjectId: number;
+  subjectName: string;
+  subjectCode: string;
+  professorId: number;
+  professorName: string;
+};

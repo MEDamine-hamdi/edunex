@@ -10,7 +10,7 @@ const nav: NavItem[] = [
   { href: "/professor/profile", label: "Mon profil" },
   { href: "#classes", label: "Mes classes", soon: true },
   { href: "#attendance", label: "Présences", soon: true },
-  { href: "#timetable", label: "Emploi du temps", soon: true },
+  { href: "/professor/timetable", label: "Emploi du temps" },
   { href: "#notifications", label: "Notifications", soon: true },
 ];
 
