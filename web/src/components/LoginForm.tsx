@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, saveSession } from "@/lib/auth";
+import { homeFor } from "@/lib/roles";
 import {
   ArrowRightIcon,
   EyeIcon,
@@ -29,7 +30,7 @@ export function LoginForm() {
     try {
       const data = await login(email.trim(), password);
       saveSession(data, remember);
-      router.push(data.role === "ROLE_PLATFORM_ADMIN" ? "/platform/agents" : "/dashboard");
+      router.push(homeFor(data.role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
       setLoading(false);
