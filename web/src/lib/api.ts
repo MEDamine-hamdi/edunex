@@ -8,15 +8,25 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+function authHeader(): Record<string, string> {
   const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function handleUnauthorized() {
+  clearSession();
+  if (typeof window !== "undefined") window.location.href = "/login";
+}
+
+export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const isForm = typeof FormData !== "undefined" && init.body instanceof FormData;
   let res: Response;
   try {
     res = await fetch(path, {
       ...init,
       headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(isForm ? {} : { "Content-Type": "application/json" }),
+        ...authHeader(),
         ...(init.headers ?? {}),
       },
     });
@@ -25,8 +35,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   }
 
   if (res.status === 401) {
-    clearSession();
-    if (typeof window !== "undefined") window.location.href = "/login";
+    handleUnauthorized();
     throw new ApiError(401, "Session expirée.");
   }
 
@@ -45,4 +54,34 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   }
 
   return res.status === 204 ? (undefined as T) : res.json();
+}
+
+export async function downloadDocument(id: number, fallbackName: string) {
+  let res: Response;
+  try {
+    res = await fetch(`/api/documents/${id}/download`, { headers: authHeader() });
+  } catch {
+    throw new ApiError(0, "Serveur injoignable.");
+  }
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw new ApiError(401, "Session expirée.");
+  }
+  if (!res.ok) {
+    throw new ApiError(res.status, res.status === 403 ? "Accès refusé." : "Téléchargement impossible.");
+  }
+
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  const name = match ? decodeURIComponent(match[1]) : fallbackName;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }

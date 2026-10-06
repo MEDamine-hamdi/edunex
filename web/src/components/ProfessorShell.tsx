@@ -5,10 +5,10 @@ import { NavItem, RoleShell } from "./RoleShell";
 
 const nav: NavItem[] = [
   { href: "/professor", label: "Tableau de bord", exact: true },
+  { href: "/professor/subjects", label: "Mes matières" },
+  { href: "/professor/courses", label: "Mes cours" },
   { href: "/professor/profile", label: "Mon profil" },
-  { href: "#subjects", label: "Mes matières", soon: true },
   { href: "#classes", label: "Mes classes", soon: true },
-  { href: "#courses", label: "Mes cours", soon: true },
   { href: "#attendance", label: "Présences", soon: true },
   { href: "#timetable", label: "Emploi du temps", soon: true },
   { href: "#notifications", label: "Notifications", soon: true },
