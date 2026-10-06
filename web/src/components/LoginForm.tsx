@@ -29,7 +29,7 @@ export function LoginForm() {
     try {
       const data = await login(email.trim(), password);
       saveSession(data, remember);
-      router.push("/dashboard");
+      router.push(data.role === "ROLE_PLATFORM_ADMIN" ? "/platform/agents" : "/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
       setLoading(false);
