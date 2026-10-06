@@ -26,3 +26,5 @@ mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
 "@ | Set-Content .gitignore
 backend/config/
+
+backend/storage/
