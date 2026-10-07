@@ -10,7 +10,7 @@ const nav: NavItem[] = [
   { href: "/admin/subjects", label: "Matières" },
   { href: "/admin/enrollments", label: "Inscriptions" },
   { href: "/admin/timetables", label: "Emplois du temps" },
-  { href: "#grades", label: "Notes", soon: true },
+  { href: "/admin/grades", label: "Notes" },
   { href: "#announcements", label: "Annonces", soon: true },
   { href: "#stats", label: "Statistiques", soon: true },
 ];
