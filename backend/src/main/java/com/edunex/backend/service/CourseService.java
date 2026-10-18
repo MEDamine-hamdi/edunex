@@ -8,6 +8,7 @@ import com.edunex.backend.entity.Professor;
 import com.edunex.backend.entity.Student;
 import com.edunex.backend.entity.Subject;
 import com.edunex.backend.entity.User;
+import com.edunex.backend.enums.NotificationType;
 import com.edunex.backend.exception.BadRequestException;
 import com.edunex.backend.exception.ResourceNotFoundException;
 import com.edunex.backend.repository.CourseDocumentRepository;
@@ -40,6 +41,7 @@ public class CourseService {
     private final UserRepository userRepository;
     private final StudentAccessService studentAccessService;
     private final FileStorage fileStorage;
+    private final NotificationService notificationService;
 
     public record DownloadedFile(Resource resource, String filename) {
     }
@@ -81,6 +83,8 @@ public class CourseService {
         c.setDescription(req.description());
         c.setSubject(subject);
         c.setProfessor(p);
+        notificationService.notifySubjectStudents(subject.getId(), NotificationType.NEW_COURSE,
+                "Nouveau cours en " + subject.getName() + " : " + c.getTitle());
         return toResponse(courseRepository.save(c));
     }
 

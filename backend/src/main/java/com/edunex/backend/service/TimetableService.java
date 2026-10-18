@@ -12,6 +12,7 @@ import com.edunex.backend.entity.Subject;
 import com.edunex.backend.entity.Timetable;
 import com.edunex.backend.entity.TimetableSession;
 import com.edunex.backend.enums.EnrollmentStatus;
+import com.edunex.backend.enums.NotificationType;
 import com.edunex.backend.exception.BadRequestException;
 import com.edunex.backend.exception.ConflictException;
 import com.edunex.backend.exception.ResourceNotFoundException;
@@ -47,6 +48,7 @@ public class TimetableService {
     private final ProfessorRepository professorRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // ---------- administration agent ----------
 
@@ -86,6 +88,7 @@ public class TimetableService {
         TimetableSession s = new TimetableSession();
         s.setTimetable(t);
         apply(s, t, req, null);
+        notifySession("Nouvelle séance", s);
         return toResponse(sessionRepository.save(s));
     }
 
@@ -93,12 +96,14 @@ public class TimetableService {
     public SessionResponse updateSession(Long sessionId, SessionRequest req) {
         TimetableSession s = findSession(sessionId);
         apply(s, s.getTimetable(), req, sessionId);
+        notifySession("Séance modifiée", s);
         return toResponse(sessionRepository.save(s));
     }
 
     @Transactional
     public void deleteSession(Long sessionId) {
         TimetableSession s = findSession(sessionId);
+        notifySession("Séance annulée", s);
         s.getTimetable().getSessions().remove(s);
         sessionRepository.delete(s);
     }
@@ -189,6 +194,14 @@ public class TimetableService {
     }
 
     // ---------- helpers ----------
+
+    private void notifySession(String prefix, TimetableSession s) {
+        String day = s.getDayOfWeek().getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.FRENCH);
+        String msg = prefix + " : " + s.getSubject().getName() + ", " + day + " de " + s.getStartTime()
+                + " à " + s.getEndTime() + (s.getRoom() != null ? " (salle " + s.getRoom() + ")" : "");
+        notificationService.notifyClassStudents(s.getSchoolClass().getId(), NotificationType.TIMETABLE_CHANGE, msg);
+        notificationService.notifyUsers(java.util.List.of(s.getProfessor()), NotificationType.TIMETABLE_CHANGE, msg);
+    }
 
     private Timetable findTimetable(Long id) {
         return timetableRepository.findById(id)

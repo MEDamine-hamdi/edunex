@@ -13,6 +13,7 @@ import com.edunex.backend.entity.Student;
 import com.edunex.backend.entity.Subject;
 import com.edunex.backend.enums.AttendanceStatus;
 import com.edunex.backend.enums.EnrollmentStatus;
+import com.edunex.backend.enums.NotificationType;
 import com.edunex.backend.exception.BadRequestException;
 import com.edunex.backend.exception.ResourceNotFoundException;
 import com.edunex.backend.repository.AttendanceRepository;
@@ -44,6 +45,7 @@ public class AttendanceService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final StudentAccessService studentAccessService;
+    private final NotificationService notificationService;
 
     // ---------- professor ----------
 
@@ -91,10 +93,16 @@ public class AttendanceService {
             a.setStudent(enrollment.getStudent());
             a.setSubject(subject);
             a.setDate(req.date());
+            AttendanceStatus previousStatus = a.getStatus();
             a.setStatus(entry.status());
             a.setJustification(entry.status() == AttendanceStatus.PRESENT ? null : justification);
             a.setMarkedBy(p);
             attendanceRepository.save(a);
+            if (entry.status() != AttendanceStatus.PRESENT && entry.status() != previousStatus) {
+                notificationService.notifyUsers(List.of(enrollment.getStudent()), NotificationType.ATTENDANCE_UPDATE,
+                        (entry.status() == AttendanceStatus.ABSENT ? "Absence" : "Retard")
+                                + " enregistré(e) en " + subject.getName() + " le " + req.date());
+            }
         }
         return recordsForDate(subjectId, req.date());
     }

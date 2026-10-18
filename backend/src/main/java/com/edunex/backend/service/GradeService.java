@@ -11,6 +11,7 @@ import com.edunex.backend.entity.SchoolClass;
 import com.edunex.backend.entity.Student;
 import com.edunex.backend.entity.Subject;
 import com.edunex.backend.enums.EnrollmentStatus;
+import com.edunex.backend.enums.NotificationType;
 import com.edunex.backend.exception.BadRequestException;
 import com.edunex.backend.exception.ResourceNotFoundException;
 import com.edunex.backend.repository.EnrollmentRepository;
@@ -45,6 +46,7 @@ public class GradeService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final StudentAccessService studentAccessService;
+    private final NotificationService notificationService;
 
     // ---------- administration agent ----------
 
@@ -101,6 +103,8 @@ public class GradeService {
         Grade g = new Grade();
         g.setStudent(student);
         g.setSubject(subject);
+        notificationService.notifyUsers(List.of(student), NotificationType.NEW_GRADE,
+                "Nouvelle note en " + subject.getName() + " : " + round2(req.value()) + " / 20");
         g.setValue(round2(req.value()));
         g.setEvaluationType(req.evaluationType());
         g.setDate(req.date());
