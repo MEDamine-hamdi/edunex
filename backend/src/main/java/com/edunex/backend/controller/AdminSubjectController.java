@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/subjects")
-@PreAuthorize("hasRole('ADMIN_AGENT')")
+@PreAuthorize("hasRole('ADMIN_AGENT') and hasAuthority('STRUCTURE_MANAGE')")
 @RequiredArgsConstructor
 public class AdminSubjectController {
 

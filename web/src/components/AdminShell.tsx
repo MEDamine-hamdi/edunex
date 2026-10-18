@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { NavItem, RoleShell } from "./RoleShell";
 
 const nav: NavItem[] = [
+  { href: "/admin/dashboard", label: "Tableau de bord", exact: true },
   { href: "/admin/professors", label: "Professeurs" },
   { href: "/admin/students", label: "Étudiants" },
   { href: "/admin/classes", label: "Classes" },
@@ -11,8 +12,9 @@ const nav: NavItem[] = [
   { href: "/admin/enrollments", label: "Inscriptions" },
   { href: "/admin/timetables", label: "Emplois du temps" },
   { href: "/admin/grades", label: "Notes" },
-  { href: "#announcements", label: "Annonces", soon: true },
-  { href: "#stats", label: "Statistiques", soon: true },
+  { href: "/admin/announcements", label: "Annonces" },
+  { href: "/admin/notifications", label: "Notifications" },
+  { href: "/admin/profile", label: "Mon profil" },
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {

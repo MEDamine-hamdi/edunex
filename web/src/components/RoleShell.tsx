@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { clearSession } from "@/lib/auth";
-import { homeFor } from "@/lib/roles";
+import { homeFor, notificationsFor, profileFor } from "@/lib/roles";
 import { Logo } from "./Logo";
+import { NotificationBell } from "./NotificationBell";
 
 export type Me = {
   id: number;
@@ -83,7 +84,10 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}>{badge}</span>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-slate-600">{me.firstName} {me.lastName}</span>
+            <NotificationBell href={notificationsFor(me.role)} />
+            <Link href={profileFor(me.role)} className="text-slate-600 hover:text-blue-700">
+              {me.firstName} {me.lastName}
+            </Link>
             <button
               onClick={logout}
               className="rounded-xl border border-slate-200 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"

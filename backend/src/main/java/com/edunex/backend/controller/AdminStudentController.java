@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/students")
-@PreAuthorize("hasRole('ADMIN_AGENT')")
+@PreAuthorize("hasRole('ADMIN_AGENT') and hasAuthority('ACCOUNTS_MANAGE')")
 @RequiredArgsConstructor
 public class AdminStudentController {
 

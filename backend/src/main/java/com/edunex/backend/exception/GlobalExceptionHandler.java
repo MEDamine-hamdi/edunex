@@ -50,6 +50,13 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "File is too large (25 MB maximum)"));
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Map<String, Object>> handleTooMany(TooManyRequestsException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+                .body(Map.<String, Object>of("error", ex.getMessage(), "retryAfterSeconds", ex.getRetryAfterSeconds()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fields = new HashMap<>();
@@ -60,4 +67,26 @@ public class GlobalExceptionHandler {
         body.put("fields", fields);
         return ResponseEntity.badRequest().body(body);
     }
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleUnreadable(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        String msg = ex.getMostSpecificCause() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : ex.getMessage();
+        return ResponseEntity.badRequest().body(Map.of("error", "Malformed request body: " + msg));
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneric(Exception ex) {
+        ex.printStackTrace();
+        return ResponseEntity.internalServerError()
+                .body(Map.of("error", ex.getClass().getSimpleName() + ": " + ex.getMessage()));
+    }
+
 }

@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN_AGENT')")
+@PreAuthorize("hasRole('ADMIN_AGENT') and hasAuthority('GRADES_MANAGE')")
 @RequiredArgsConstructor
 public class AdminGradeController {
 

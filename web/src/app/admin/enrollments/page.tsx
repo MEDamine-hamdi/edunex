@@ -120,7 +120,7 @@ export default function EnrollmentsPage() {
       });
       setRows((prev) => prev.map((r) => (r.id === row.id ? updated : r)));
     } catch (err) {
-      if (err instanceof ApiError) setError(err.message);
+      if (err instanceof ApiError) setError(err.status === 409 ? "Cet étudiant a déjà une inscription active dans cette classe pour cette année." : err.message);
     }
   }
 

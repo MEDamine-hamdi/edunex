@@ -7,11 +7,11 @@ const nav: NavItem[] = [
   { href: "/professor", label: "Tableau de bord", exact: true },
   { href: "/professor/subjects", label: "Mes matières" },
   { href: "/professor/courses", label: "Mes cours" },
-  { href: "/professor/profile", label: "Mon profil" },
-  { href: "#classes", label: "Mes classes", soon: true },
+  { href: "/professor/classes", label: "Mes classes" },
   { href: "/professor/attendance", label: "Présences" },
   { href: "/professor/timetable", label: "Emploi du temps" },
-  { href: "#notifications", label: "Notifications", soon: true },
+  { href: "/professor/notifications", label: "Notifications" },
+  { href: "/professor/profile", label: "Mon profil" },
 ];
 
 export function ProfessorShell({ children }: { children: ReactNode }) {

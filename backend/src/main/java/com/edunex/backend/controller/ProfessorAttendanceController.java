@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/professor/subjects/{subjectId}")
-@PreAuthorize("hasRole('PROFESSOR')")
+@PreAuthorize("hasRole('PROFESSOR') and hasAuthority('ATTENDANCE_MARK')")
 @RequiredArgsConstructor
 public class ProfessorAttendanceController {
 

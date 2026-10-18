@@ -83,6 +83,11 @@ public class EnrollmentService {
     public EnrollmentResponse updateStatus(Long id, EnrollmentStatus status) {
         Enrollment e = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+        if (status == EnrollmentStatus.ACTIVE && e.getStatus() != EnrollmentStatus.ACTIVE
+                && enrollmentRepository.existsByStudentIdAndSchoolClassIdAndAcademicYearAndStatus(
+                        e.getStudent().getId(), e.getSchoolClass().getId(), e.getAcademicYear(), EnrollmentStatus.ACTIVE)) {
+            throw new ConflictException("Student is already enrolled in this class for this academic year");
+        }
         e.setStatus(status);
         return toResponse(enrollmentRepository.save(e));
     }

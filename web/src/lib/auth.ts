@@ -26,12 +26,14 @@ export async function login(email: string, password: string): Promise<LoginRespo
     let message = "Une erreur est survenue. Réessayez.";
     try {
       const data = await res.json();
-      if (res.status === 401) message = "Email ou mot de passe incorrect.";
+      if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
+      else if (res.status === 401) message = "Email ou mot de passe incorrect.";
       else if (res.status === 403) message = "Ce compte n'est pas actif.";
       else if (data?.fields) message = "Veuillez saisir un email valide et un mot de passe.";
       else if (data?.error) message = data.error;
     } catch {
-      if (res.status === 401) message = "Email ou mot de passe incorrect.";
+      if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
+      else if (res.status === 401) message = "Email ou mot de passe incorrect.";
     }
     throw new Error(message);
   }
