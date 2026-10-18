@@ -1,12 +1,12 @@
 "use client";
 
 import { StudentShell } from "@/components/StudentShell";
-import { ProfilePanel } from "@/components/MeViews";
+import { ProfileEditor } from "@/components/ProfileEditor";
 
-export default function StudentProfile() {
+export default function ProfilePage() {
   return (
     <StudentShell>
-      <ProfilePanel />
+      <ProfileEditor />
     </StudentShell>
   );
 }
