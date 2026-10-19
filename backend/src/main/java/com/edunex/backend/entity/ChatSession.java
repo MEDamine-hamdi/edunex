@@ -27,6 +27,13 @@ public class ChatSession {
     @Column(length = 200)
     private String title;
 
+    /** Both null: general conversation (institute guide). Otherwise the conversation is tied to a subject or a course. */
+    @Column(name = "scope_subject_id")
+    private Long scopeSubjectId;
+
+    @Column(name = "scope_course_id")
+    private Long scopeCourseId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -26,6 +26,10 @@ public class ChatMessage {
     @Column(nullable = false, length = 10)
     private SenderType sender;
 
+    /** Cited course documents, one per line: number, document id, titles separated by tabs. */
+    @Column(columnDefinition = "TEXT")
+    private String sources;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
