@@ -4,3 +4,8 @@ body {
   font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Arabic: right-to-left */
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+[dir="rtl"] .border-r { border-right-width: 0; border-left-width: 1px; }

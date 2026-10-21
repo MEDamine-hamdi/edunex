@@ -57,6 +57,11 @@ public class GlobalExceptionHandler {
                 .body(Map.<String, Object>of("error", ex.getMessage(), "retryAfterSeconds", ex.getRetryAfterSeconds()));
     }
 
+    @ExceptionHandler(AiUnavailableException.class)
+    public ResponseEntity<Map<String, String>> handleAiUnavailable(AiUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fields = new HashMap<>();

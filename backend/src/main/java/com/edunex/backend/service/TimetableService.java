@@ -203,6 +203,27 @@ public class TimetableService {
         notificationService.notifyUsers(java.util.List.of(s.getProfessor()), NotificationType.TIMETABLE_CHANGE, msg);
     }
 
+    /** Dry run: the message of the rule a session would break, or null when it can be created. */
+    @Transactional(readOnly = true)
+    public String validateSession(Long timetableId, SessionRequest req) {
+        try {
+            apply(new TimetableSession(), findTimetable(timetableId), req, null);
+            return null;
+        } catch (ConflictException | BadRequestException | ResourceNotFoundException e) {
+            return e.getMessage();
+        }
+    }
+
+    /** Same rules as addSession, without a notification per session (the import sends one summary). */
+    @Transactional
+    public SessionResponse importSession(Long timetableId, SessionRequest req) {
+        Timetable t = findTimetable(timetableId);
+        TimetableSession s = new TimetableSession();
+        s.setTimetable(t);
+        apply(s, t, req, null);
+        return toResponse(sessionRepository.save(s));
+    }
+
     private Timetable findTimetable(Long id) {
         return timetableRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Timetable not found"));

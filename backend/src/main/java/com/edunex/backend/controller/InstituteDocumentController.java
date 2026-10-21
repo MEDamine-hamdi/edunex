@@ -13,13 +13,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The institute guide is official information: any signed-in user may download it. */
+/** The institute guide is official information: any signed-in user may read or download it. */
 @RestController
 @RequestMapping("/api/institute/documents")
 @RequiredArgsConstructor
 public class InstituteDocumentController {
 
     private final InstituteKnowledgeService knowledgeService;
+
+    @GetMapping("/{id}/info")
+    public InstituteKnowledgeService.SourceInfo info(@PathVariable Long id) {
+        return knowledgeService.info(id);
+    }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> download(@PathVariable Long id) {

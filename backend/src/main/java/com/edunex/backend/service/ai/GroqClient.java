@@ -1,5 +1,6 @@
 package com.edunex.backend.service.ai;
 
+import com.edunex.backend.exception.AiRateLimitedException;
 import com.edunex.backend.exception.AiUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,10 +37,6 @@ public class GroqClient {
     private final String reasoningEffort;
     private final int maxTokens;
 
-    public boolean isConfigured() {
-        return !apiKey.isBlank();
-    }
-
     public GroqClient(@Value("${app.ai.groq-api-key:}") String apiKey,
                       @Value("${app.ai.base-url:https://api.groq.com/openai/v1}") String baseUrl,
                       @Value("${app.ai.model:openai/gpt-oss-120b}") String model,
@@ -61,8 +58,15 @@ public class GroqClient {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    public boolean isConfigured() {
+        return !apiKey.isBlank();
+    }
+
     public Completion complete(List<Message> messages) {
+        return complete(messages, maxTokens, reasoningEffort);
+    }
+
+    public Completion complete(List<Message> messages, int outputTokens, String effort) {
         if (apiKey.isBlank()) {
             throw new AiUnavailableException("The AI assistant is not configured");
         }
@@ -74,9 +78,9 @@ public class GroqClient {
         body.put("model", model);
         body.put("messages", wire);
         body.put("temperature", 0.3);
-        body.put("max_completion_tokens", maxTokens);
-        if (!reasoningEffort.isBlank()) {
-            body.put("reasoning_effort", reasoningEffort);
+        body.put("max_completion_tokens", outputTokens);
+        if (effort != null && !effort.isBlank()) {
+            body.put("reasoning_effort", effort);
         }
 
         Map<String, Object> response;
@@ -94,7 +98,14 @@ public class GroqClient {
             log.warn("Groq returned {}: {}", e.getStatusCode().value(),
                     detail.length() > 400 ? detail.substring(0, 400) : detail);
             if (e.getStatusCode().value() == 429) {
-                throw new AiUnavailableException("The AI service is busy, please try again in a moment");
+                int retry = 20;
+                String header = e.getResponseHeaders() == null ? null : e.getResponseHeaders().getFirst("retry-after");
+                try {
+                    retry = header == null ? 20 : (int) Math.ceil(Double.parseDouble(header));
+                } catch (NumberFormatException ignored) {
+                    // keep the default
+                }
+                throw new AiRateLimitedException("The AI service is busy, please try again in a moment", retry);
             }
             throw new AiUnavailableException("The AI service is temporarily unavailable");
         } catch (RestClientException e) {
@@ -112,9 +123,6 @@ public class GroqClient {
         if (content == null || content.isBlank()) {
             log.warn("Empty completion from Groq (finish_reason={})", finish);
             throw new AiUnavailableException("The AI service returned no answer, please try again");
-        }
-        if ("length".equals(finish)) {
-            log.warn("Groq answer was cut at max_completion_tokens={}", maxTokens);
         }
         return new Completion(content, finish);
     }

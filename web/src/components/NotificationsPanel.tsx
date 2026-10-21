@@ -20,6 +20,7 @@ const TYPES: Record<string, string> = {
   NEW_GRADE: "Note",
   ATTENDANCE_UPDATE: "Présence",
   ANNOUNCEMENT: "Annonce",
+  DOCUMENT_REQUEST: "Demande",
 };
 
 const when = (iso: string) =>

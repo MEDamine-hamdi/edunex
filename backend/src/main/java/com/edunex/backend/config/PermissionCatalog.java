@@ -16,6 +16,7 @@ public final class PermissionCatalog {
             new Entry("ANNOUNCEMENTS_PUBLISH", "Publier des annonces", List.of("ROLE_ADMIN_AGENT")),
             new Entry("STATS_VIEW_UNIVERSITY", "Consulter les statistiques de l'université", List.of("ROLE_ADMIN_AGENT")),
             new Entry("KNOWLEDGE_MANAGE", "Gérer le guide de l'institut utilisé par l'assistant IA", List.of("ROLE_ADMIN_AGENT")),
+            new Entry("REQUESTS_MANAGE", "Traiter les demandes de documents", List.of("ROLE_ADMIN_AGENT")),
             new Entry("ATTENDANCE_MARK", "Faire l'appel et consulter les présences de ses matières", List.of("ROLE_PROFESSOR")),
             new Entry("AI_ASSISTANT_USE", "Utiliser l'assistant IA EduNex", List.of("ROLE_STUDENT"))
     );

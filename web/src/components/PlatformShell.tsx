@@ -9,6 +9,7 @@ const nav: NavItem[] = [
   { href: "/platform/roles", label: "Rôles" },
   { href: "/platform/permissions", label: "Permissions" },
   { href: "/platform/settings", label: "Paramètres" },
+  { href: "/platform/mail", label: "E-mails" },
   { href: "/platform/logs", label: "Journal d'activité" },
   { href: "/platform/notifications", label: "Notifications" },
   { href: "/platform/profile", label: "Mon profil" },

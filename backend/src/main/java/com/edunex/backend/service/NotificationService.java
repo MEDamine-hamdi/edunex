@@ -33,6 +33,7 @@ public class NotificationService {
     private final SchoolClassRepository classRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final MailOutboxService mailOutbox;
 
     // ---------- sending ----------
 
@@ -52,6 +53,7 @@ public class NotificationService {
             batch.add(n);
         }
         notificationRepository.saveAll(batch);
+        mailOutbox.enqueueNotifications(batch);
     }
 
     @Transactional

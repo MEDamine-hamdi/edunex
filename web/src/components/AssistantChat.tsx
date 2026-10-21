@@ -236,7 +236,11 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
 
   async function openSource(s: Source) {
     try {
-      if (s.kind === "INSTITUTE") await downloadFromUrl(`/api/institute/documents/${s.documentId}/download`, s.documentTitle);
+      if (s.kind === "INSTITUTE") {
+        const info = await apiFetch<{ kind: string; url: string | null }>(`/api/institute/documents/${s.documentId}/info`);
+        if (info.kind === "LINK" && info.url) window.open(info.url, "_blank", "noopener,noreferrer");
+        else await downloadFromUrl(`/api/institute/documents/${s.documentId}/download`, s.documentTitle);
+      }
       else await downloadDocument(s.documentId, s.documentTitle);
     } catch (e) {
       setError(friendly(e));

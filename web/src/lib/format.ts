@@ -1,3 +1,9 @@
+let locale = "fr-FR";
+
+export function setLocaleCode(code: string) {
+  locale = code;
+}
+
 export function formatSize(bytes: number | null | undefined): string {
   if (bytes == null) return "-";
   if (bytes < 1024) return `${bytes} o`;
@@ -6,5 +12,5 @@ export function formatSize(bytes: number | null | undefined): string {
 }
 
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
 }

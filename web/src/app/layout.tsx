@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "EduNex | Plateforme universitaire intelligente",
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
-      <body className="bg-white text-slate-900">{children}</body>
+    <html lang="fr" suppressHydrationWarning>
+      <body className="bg-white text-slate-900">
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

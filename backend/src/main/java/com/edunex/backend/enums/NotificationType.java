@@ -5,5 +5,6 @@ public enum NotificationType {
     TIMETABLE_CHANGE,
     NEW_GRADE,
     ATTENDANCE_UPDATE,
-    ANNOUNCEMENT
+    ANNOUNCEMENT,
+    DOCUMENT_REQUEST
 }

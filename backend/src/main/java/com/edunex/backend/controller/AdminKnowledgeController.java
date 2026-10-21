@@ -2,6 +2,9 @@ package com.edunex.backend.controller;
 
 import com.edunex.backend.dto.InstituteDocumentResponse;
 import com.edunex.backend.service.ai.InstituteKnowledgeService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,12 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/** Management of the institute guide used by the general assistant. */
 @RestController
 @RequestMapping("/api/admin/knowledge")
 @PreAuthorize("hasRole('ADMIN_AGENT') and hasAuthority('KNOWLEDGE_MANAGE')")
 @RequiredArgsConstructor
 public class AdminKnowledgeController {
+
+    public record LinkRequest(@Size(max = 200) String title, @NotBlank @Size(max = 1000) String url) {
+    }
 
     private final InstituteKnowledgeService knowledgeService;
 
@@ -32,6 +37,12 @@ public class AdminKnowledgeController {
                                                             @RequestParam(value = "title", required = false) String title,
                                                             Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED).body(knowledgeService.upload(auth.getName(), title, file));
+    }
+
+    @PostMapping("/link")
+    public ResponseEntity<InstituteDocumentResponse> addLink(@Valid @RequestBody LinkRequest request, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(knowledgeService.addLink(auth.getName(), request.title(), request.url()));
     }
 
     @PostMapping("/{id}/reindex")

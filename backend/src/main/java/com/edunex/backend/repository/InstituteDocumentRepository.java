@@ -13,5 +13,7 @@ public interface InstituteDocumentRepository extends JpaRepository<InstituteDocu
 
     List<InstituteDocument> findByStatus(String status);
 
+    List<InstituteDocument> findBySourceKind(String sourceKind);
+
     long countByStatus(String status);
 }
