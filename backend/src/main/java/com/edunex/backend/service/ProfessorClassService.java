@@ -1,11 +1,13 @@
 package com.edunex.backend.service;
 
 import com.edunex.backend.dto.ProfessorClassResponse;
+import com.edunex.backend.entity.ClassTeaching;
 import com.edunex.backend.entity.Enrollment;
 import com.edunex.backend.entity.Professor;
 import com.edunex.backend.entity.SchoolClass;
 import com.edunex.backend.entity.Subject;
 import com.edunex.backend.enums.EnrollmentStatus;
+import com.edunex.backend.repository.ClassTeachingRepository;
 import com.edunex.backend.repository.EnrollmentRepository;
 import com.edunex.backend.repository.SchoolClassRepository;
 import com.edunex.backend.repository.SubjectRepository;
@@ -15,7 +17,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,6 +32,7 @@ public class ProfessorClassService {
     private final SubjectRepository subjectRepository;
     private final SchoolClassRepository classRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final ClassTeachingRepository teachingRepository;
 
     @Transactional(readOnly = true)
     public List<ProfessorClassResponse> myClasses(String email) {
@@ -40,11 +42,26 @@ public class ProfessorClassService {
                 .orElseThrow(() -> new AccessDeniedException("Professor account required"));
 
         Map<Long, SchoolClass> classes = new LinkedHashMap<>();
-        Map<Long, List<Subject>> subjectsByClass = new HashMap<>();
+        Map<Long, Map<Long, Subject>> subjectsByClass = new HashMap<>();
+
+        // 1) explicit assignments of this professor
+        for (ClassTeaching t : teachingRepository.findByProfessorId(p.getId())) {
+            SchoolClass c = classRepository.findById(t.getClassId()).orElse(null);
+            Subject s = subjectRepository.findById(t.getSubjectId()).orElse(null);
+            if (c == null || s == null || c.getSubjects().stream().noneMatch(x -> x.getId().equals(s.getId()))) {
+                continue;
+            }
+            classes.putIfAbsent(c.getId(), c);
+            subjectsByClass.computeIfAbsent(c.getId(), k -> new LinkedHashMap<>()).put(s.getId(), s);
+        }
+        // 2) subjects the professor teaches in general, for classes where nobody was assigned explicitly
         for (Subject s : subjectRepository.findByProfessorsId(p.getId())) {
             for (SchoolClass c : classRepository.findBySubjectsId(s.getId())) {
+                if (!teachingRepository.findByClassIdAndSubjectId(c.getId(), s.getId()).isEmpty()) {
+                    continue;
+                }
                 classes.putIfAbsent(c.getId(), c);
-                subjectsByClass.computeIfAbsent(c.getId(), k -> new ArrayList<>()).add(s);
+                subjectsByClass.computeIfAbsent(c.getId(), k -> new LinkedHashMap<>()).put(s.getId(), s);
             }
         }
         if (classes.isEmpty()) {
@@ -59,7 +76,7 @@ public class ProfessorClassService {
                 .sorted(Comparator.comparing(SchoolClass::getName))
                 .map(c -> new ProfessorClassResponse(
                         c.getId(), c.getName(), c.getLevel(), c.getAcademicYear(),
-                        subjectsByClass.get(c.getId()).stream()
+                        subjectsByClass.get(c.getId()).values().stream()
                                 .sorted(Comparator.comparing(Subject::getName))
                                 .map(s -> new ProfessorClassResponse.SubjectRef(s.getId(), s.getName(), s.getCode()))
                                 .toList(),

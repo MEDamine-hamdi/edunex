@@ -60,7 +60,7 @@ export default function ProfessorClassesPage() {
                   <tr>
                     <th className="px-5 py-3">Étudiant</th>
                     <th className="px-5 py-3">N° étudiant</th>
-                    <th className="px-5 py-3">Section</th>
+                    <th className="px-5 py-3">Groupe</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">

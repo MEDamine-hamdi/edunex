@@ -16,7 +16,7 @@ const nav: NavItem[] = [
   { href: "/admin/knowledge", label: "Base de connaissances" },
   { href: "/admin/requests", label: "Demandes de documents" },
   { href: "/admin/absences", label: "Absences des enseignants" },
-  { href: "/admin/timetables/import", label: "Importer un emploi du temps (PDF)" },
+  
   { href: "/admin/notifications", label: "Notifications" },
   { href: "/admin/profile", label: "Mon profil" },
 ];

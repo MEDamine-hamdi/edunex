@@ -81,7 +81,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
       <div className="min-h-screen bg-slate-50">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-4">
           <div className="flex flex-wrap items-center gap-4">
-            <Logo />
+            <Link href={homeFor(me.role)} aria-label="Tableau de bord"><Logo /></Link>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}>{badge}</span>
           </div>
           <div className="flex items-center gap-4 text-sm">

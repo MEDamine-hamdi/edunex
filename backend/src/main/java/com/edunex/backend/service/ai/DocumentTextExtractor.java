@@ -61,6 +61,13 @@ public class DocumentTextExtractor {
             throw new UnsupportedFormatException("file too large to index");
         }
 
+        return extractFrom(name, bytes);
+    }
+
+    /** Text of an uploaded file that is not stored (chat attachments). */
+    public String extractFrom(String fileName, byte[] bytes) throws IOException {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        String ext = lower.contains(".") ? lower.substring(lower.lastIndexOf('.') + 1) : "";
         String text = switch (ext) {
             case "pdf" -> pdf(bytes);
             case "docx" -> ooxml(bytes, false);

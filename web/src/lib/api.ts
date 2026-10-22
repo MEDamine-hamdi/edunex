@@ -15,7 +15,7 @@ function authHeader(): Record<string, string> {
 
 function handleUnauthorized() {
   clearSession();
-  if (typeof window !== "undefined") window.location.href = "/login";
+  if (typeof window !== "undefined") window.location.replace("/login");
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {

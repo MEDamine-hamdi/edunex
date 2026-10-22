@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { AdminShell } from "@/components/AdminShell";
+
 import { ErrorBox, PageHeader, TextField, inputCls, primaryBtn, smallBtn } from "@/components/ui";
 import { ApiError, apiFetch } from "@/lib/api";
 import type { Timetable } from "@/lib/types";
@@ -35,7 +35,7 @@ const DAYS = [["MONDAY", "Lundi"], ["TUESDAY", "Mardi"], ["WEDNESDAY", "Mercredi
 const valid = (r: Edit) => !!(r.classId && r.subjectId && r.professorId && r.day && r.start && r.end && r.start < r.end);
 const cell = "w-full min-w-28 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm";
 
-export default function TimetableImportPage() {
+export function TimetableImport() {
   const [timetables, setTimetables] = useState<Timetable[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [subjects, setSubjects] = useState<SubjectItem[]>([]);
@@ -152,11 +152,11 @@ export default function TimetableImportPage() {
   const pending = rows.filter((r) => r.include && !r.done && valid(r)).length;
 
   return (
-    <AdminShell>
+    <>
       <PageHeader
         title="Importer un emploi du temps"
         subtitle="Déposez le PDF de l'emploi du temps : l'IA propose les séances, vous vérifiez et corrigez, puis vous les créez. Rien n'est créé avant votre confirmation."
-        action={<Link href="/admin/timetables" className={smallBtn}>Emplois du temps</Link>}
+        
       />
       <ErrorBox message={error} />
 
@@ -262,6 +262,6 @@ export default function TimetableImportPage() {
           </div>
         </>
       )}
-    </AdminShell>
+    </>
   );
 }

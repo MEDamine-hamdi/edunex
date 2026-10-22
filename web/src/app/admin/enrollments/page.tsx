@@ -101,7 +101,7 @@ export default function EnrollmentsPage() {
           setError(
             err.message.includes("already")
               ? "Cet étudiant est déjà inscrit dans cette classe pour cette année."
-              : "La section n'appartient pas à cette classe."
+              : "Le groupe n'appartient pas à cette classe."
           );
         else setError(err.message);
       }
@@ -173,7 +173,7 @@ export default function EnrollmentsPage() {
               </select>
             </label>
             <label className="block text-sm font-medium text-slate-700">
-              Section (optionnel)
+              Groupe (optionnel)
               <select
                 value={form.sectionId}
                 onChange={(e) => setForm({ ...form, sectionId: e.target.value })}
@@ -199,7 +199,7 @@ export default function EnrollmentsPage() {
             <tr>
               <th className="px-5 py-3">Étudiant</th>
               <th className="px-5 py-3">Classe</th>
-              <th className="px-5 py-3">Section</th>
+              <th className="px-5 py-3">Groupe</th>
               <th className="px-5 py-3">Année</th>
               <th className="px-5 py-3">Date</th>
               <th className="px-5 py-3">Statut</th>

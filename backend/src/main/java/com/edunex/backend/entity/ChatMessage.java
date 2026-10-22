@@ -26,9 +26,13 @@ public class ChatMessage {
     @Column(nullable = false, length = 10)
     private SenderType sender;
 
-    /** Cited course documents, one per line: number, document id, titles separated by tabs. */
+    /** Cited documents, one per line, fields separated by tabs. */
     @Column(columnDefinition = "TEXT")
     private String sources;
+
+    /** Name of the file the student attached to this message, if any. */
+    @Column(name = "attachment_name", length = 255)
+    private String attachmentName;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

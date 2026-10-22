@@ -45,6 +45,19 @@ public class DocumentRequest {
     @Column(name = "handled_by", length = 200)
     private String handledBy;
 
+    /** The document sent through the app, downloadable by the requester. */
+    @Column(name = "file_key", length = 500)
+    private String fileKey;
+
+    @Column(name = "file_name", length = 255)
+    private String fileName;
+
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

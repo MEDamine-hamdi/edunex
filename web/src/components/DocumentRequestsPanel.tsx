@@ -2,10 +2,12 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
+import { downloadFromUrl } from "@/lib/download";
 import { formatDate } from "@/lib/format";
 import { ErrorBox, PageHeader, inputCls, primaryBtn, smallBtn } from "./ui";
 
 export type RequestStatus = "FILED" | "IN_PROGRESS" | "READY_FOR_PICKUP";
+export type TypeOption = { name: string; requiresDetails: boolean; maxCopies: number };
 export type RequestView = {
   id: number;
   type: string;
@@ -14,6 +16,8 @@ export type RequestView = {
   details: string | null;
   status: RequestStatus;
   adminNote: string | null;
+  hasFile: boolean;
+  fileName: string | null;
   handledBy: string | null;
   requesterName: string;
   requesterRole: string;
@@ -53,20 +57,20 @@ function Steps({ status }: { status: RequestStatus }) {
 
 export function DocumentRequestsPanel() {
   const [items, setItems] = useState<RequestView[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
+  const [types, setTypes] = useState<TypeOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ type: "", copies: "1", reason: "", details: "" });
-  const other = form.type === "Autre document";
+  const other = types.find((t) => t.name === form.type)?.requiresDetails ?? false;
 
   const load = useCallback(async () => {
     try {
       const [mine, t] = await Promise.all([
         apiFetch<RequestView[]>("/api/requests/mine"),
-        apiFetch<string[]>("/api/requests/types"),
+        apiFetch<TypeOption[]>("/api/requests/type-options"),
       ]);
       setItems(mine);
       setTypes(t);
@@ -142,13 +146,13 @@ export function DocumentRequestsPanel() {
               <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className={inputCls}>
                 <option value="">Choisir...</option>
                 {types.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t.name} value={t.name}>{t.name}</option>
                 ))}
               </select>
             </label>
             <label className="block text-sm font-medium text-slate-700">
               Nombre d&apos;exemplaires
-              <input type="number" min={1} max={5} required value={form.copies}
+              <input type="number" min={1} max={types.find((t) => t.name === form.type)?.maxCopies ?? 5} required value={form.copies}
                 onChange={(e) => setForm({ ...form, copies: e.target.value })} className={inputCls} />
             </label>
             <label className="block text-sm font-medium text-slate-700 sm:col-span-3">
@@ -195,6 +199,14 @@ export function DocumentRequestsPanel() {
             <p className="mt-3 text-sm text-slate-700">{r.reason}</p>
             {r.details && <p className="mt-1 text-sm text-slate-500">{r.details}</p>}
             <Steps status={r.status} />
+            {r.hasFile && (
+              <button
+                onClick={() => downloadFromUrl(`/api/requests/${r.id}/file`, r.fileName ?? "document").catch(() => setError("Téléchargement impossible."))}
+                className={`mt-4 ${primaryBtn}`}
+              >
+                Télécharger le document
+              </button>
+            )}
             {r.adminNote && (
               <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 <span className="font-semibold">Note de l&apos;administration :</span> {r.adminNote}

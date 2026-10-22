@@ -9,6 +9,7 @@ import com.edunex.backend.entity.ChatSession;
 import com.edunex.backend.entity.Student;
 import com.edunex.backend.enums.SenderType;
 import com.edunex.backend.exception.ResourceNotFoundException;
+import com.edunex.backend.repository.ChatAttachmentRepository;
 import com.edunex.backend.repository.ChatMessageRepository;
 import com.edunex.backend.repository.ChatSessionRepository;
 import com.edunex.backend.repository.StudentRepository;
@@ -46,6 +47,7 @@ public class ChatHistoryService {
     private final StudentRepository studentRepository;
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
+    private final ChatAttachmentRepository attachmentRepository;
 
     @Transactional(readOnly = true)
     public List<ChatSessionResponse> sessions(String email, Long subjectId, Long courseId) {
@@ -74,7 +76,9 @@ public class ChatHistoryService {
 
     @Transactional
     public void delete(String email, Long sessionId) {
-        sessionRepository.delete(owned(studentId(email), sessionId));
+        ChatSession doomed = owned(studentId(email), sessionId);
+        attachmentRepository.deleteBySession(doomed.getId());
+        sessionRepository.delete(doomed);
     }
 
     /** The scope a conversation was created with: it never changes afterwards. */
@@ -151,7 +155,7 @@ public class ChatHistoryService {
 
     private ChatMessageResponse toResponse(ChatMessage m) {
         return new ChatMessageResponse(m.getId(), m.getSender().name(), m.getContent(), m.getCreatedAt(),
-                decode(m.getSources()));
+                decode(m.getSources()), m.getAttachmentName());
     }
 
     private static String clip(String s) {

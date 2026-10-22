@@ -1,6 +1,7 @@
 package com.edunex.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AnnouncementResponse(
         Long id,
@@ -11,6 +12,9 @@ public record AnnouncementResponse(
         Long classId,
         String className,
         String publishedBy,
-        Integer recipients
+        Integer recipients,
+        List<AttachmentInfo> attachments
 ) {
+    public record AttachmentInfo(Long id, String name, String contentType, Long size, boolean image) {
+    }
 }

@@ -17,7 +17,7 @@ type Source = {
   subjectName: string;
   kind: "COURSE" | "INSTITUTE";
 };
-type Msg = { id: number; role: "USER" | "AI"; content: string; createdAt: string; sources: Source[] | null };
+type Msg = { id: number; role: "USER" | "AI"; content: string; createdAt: string; sources: Source[] | null; attachmentName?: string | null };
 type SessionItem = { id: number; title: string; createdAt: string; updatedAt: string };
 type Reply = { sessionId: number; title: string; userMessage: Msg; assistantMessage: Msg };
 type ScopeInfo = { kind: "GENERAL" | "SUBJECT" | "COURSE"; label: string; documents: number; indexedDocuments: number; available: boolean };
@@ -140,6 +140,7 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
   const [messages, setMessages] = useState<Msg[]>([]);
   const [info, setInfo] = useState<ScopeInfo | null>(null);
   const [input, setInput] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -196,12 +197,20 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
     setInput("");
     setMessages((prev) => [
       ...prev,
-      { id: tempId, role: "USER", content: text, createdAt: new Date().toISOString(), sources: null },
+      { id: tempId, role: "USER", content: text, createdAt: new Date().toISOString(), sources: null, attachmentName: file?.name ?? null },
     ]);
     try {
-      const reply = await apiFetch<Reply>("/api/assistant/chat", {
+      const fd = file ? new FormData() : null;
+      if (fd && file) {
+        fd.append("message", text);
+        if (activeId) fd.append("sessionId", String(activeId));
+        if (scope?.subjectId) fd.append("subjectId", String(scope.subjectId));
+        if (scope?.courseId) fd.append("courseId", String(scope.courseId));
+        fd.append("file", file);
+      }
+      const reply = await apiFetch<Reply>(file ? "/api/assistant/chat-file" : "/api/assistant/chat", {
         method: "POST",
-        body: JSON.stringify({
+        body: fd ?? JSON.stringify({
           sessionId: activeId,
           subjectId: scope?.subjectId ?? null,
           courseId: scope?.courseId ?? null,
@@ -209,6 +218,7 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
         }),
       });
       setActiveId(reply.sessionId);
+      setFile(null);
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), reply.userMessage, reply.assistantMessage]);
       loadSessions();
     } catch (e) {
@@ -343,6 +353,7 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
                 m.role === "USER" ? "bg-blue-600 text-white" : "border border-slate-200 bg-white text-slate-800 shadow-sm"
               }`}
             >
+              {m.attachmentName && <p className="mb-2 rounded-lg bg-white/20 px-2 py-1 text-xs">Fichier joint : {m.attachmentName}</p>}
               {m.role === "USER" ? <p className="whitespace-pre-wrap">{m.content}</p> : <RichText text={m.content} />}
               {m.sources && m.sources.length > 0 && (
                 <div className="mt-3 border-t border-slate-100 pt-2">
@@ -386,6 +397,19 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
             placeholder="Posez votre question… (Entrée pour envoyer, Maj+Entrée pour un retour à la ligne)"
             className="min-w-0 flex-1 resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-[15px] focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:bg-slate-50"
           />
+          <div className="flex items-end gap-2 self-end">
+            {file && (
+              <span className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                {file.name}{" "}
+                <button type="button" aria-label="Retirer le fichier" onClick={() => setFile(null)} className="ms-1 text-blue-400 hover:text-red-600">✕</button>
+              </span>
+            )}
+            <label className={`${smallBtn} cursor-pointer py-2.5`} title="Joindre un fichier texte (PDF, DOCX, PPTX, XLSX, ODT, TXT, MD)">
+              Joindre
+              <input type="file" hidden accept=".pdf,.docx,.pptx,.xlsx,.odt,.odp,.txt,.md" disabled={sending}
+                onChange={(e) => { setFile(e.target.files?.[0] ?? null); e.target.value = ""; }} />
+            </label>
+          </div>
           <button onClick={send} disabled={sending || !input.trim()} className={`${primaryBtn} self-end`}>
             {sending ? "..." : "Envoyer"}
           </button>

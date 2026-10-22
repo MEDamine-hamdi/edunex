@@ -14,7 +14,7 @@ public final class RequestDto {
     private RequestDto() {
     }
 
-    public record Create(@NotBlank String type, @Min(1) @Max(5) int copies,
+    public record Create(@NotBlank String type, @Min(1) @Max(10) int copies,
                          @NotBlank @Size(min = 5, max = 1000) String reason, @Size(max = 1000) String details) {
     }
 
@@ -23,6 +23,7 @@ public final class RequestDto {
 
     public record View(Long id, String type, int copies, String reason, String details, String status,
                        String adminNote, String handledBy, String requesterName, String requesterRole,
-                       String requesterEmail, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                       String requesterEmail, LocalDateTime createdAt, LocalDateTime updatedAt,
+                       boolean hasFile, String fileName) {
     }
 }
