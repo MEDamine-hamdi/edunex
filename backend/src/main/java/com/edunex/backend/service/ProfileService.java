@@ -36,6 +36,7 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorage fileStorage;
+    private final com.edunex.backend.security.TokenRevocationService tokenRevocation;
 
     public record PhotoFile(Resource resource, String filename) {
     }
@@ -67,6 +68,7 @@ public class ProfileService {
             throw new BadRequestException("New password must be different from the current one");
         }
         u.setPassword(passwordEncoder.encode(req.newPassword()));
+        tokenRevocation.invalidate(u.getEmail());
         userRepository.save(u);
     }
 

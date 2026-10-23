@@ -25,6 +25,7 @@ public class AssistantController {
     private final AssistantService assistantService;
     private final ChatHistoryService historyService;
     private final com.edunex.backend.service.ai.DocumentTextExtractor extractor;
+    private final com.edunex.backend.service.ai.ChatRateLimiter rateLimiter;
 
     @PostMapping("/chat")
     public ChatReply chat(@Valid @RequestBody AssistantChatRequest request, Authentication auth) {
@@ -57,6 +58,7 @@ public class AssistantController {
                                   @RequestParam(value = "courseId", required = false) Long courseId,
                                   @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
                                   Authentication auth) {
+        rateLimiter.check(auth.getName());
         if (message == null || message.isBlank() || message.length() > 2000) {
             throw new com.edunex.backend.exception.BadRequestException("Invalid message");
         }

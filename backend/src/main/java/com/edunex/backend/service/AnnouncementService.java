@@ -157,6 +157,9 @@ public class AnnouncementService {
                 throw new BadRequestException("A file is too large (10 MB maximum)");
             }
             String ext = extension(displayName(f));
+            if (!FileSignatures.matches(ext, f)) {
+                throw new BadRequestException("The content of a file does not match its type");
+            }
             if (!IMAGES.contains(ext) && !DOCUMENTS.contains(ext)) {
                 throw new BadRequestException("Unsupported file type: use an image (PNG, JPG, WEBP, GIF) or a document (PDF, DOCX, PPTX, XLSX, ODT, TXT)");
             }

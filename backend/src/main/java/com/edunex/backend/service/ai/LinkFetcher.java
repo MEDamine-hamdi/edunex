@@ -1,5 +1,14 @@
 package com.edunex.backend.service.ai;
 
+import org.apache.hc.client5.http.DnsResolver;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,16 +23,14 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 
 /**
  * Reads the text of a public web page or PDF. Defends against server-side request forgery:
- * only http(s) on default ports, only public addresses, and every redirect is checked again.
+ * only http(s) on default ports, only public addresses (checked by the resolver used to connect,
+ * so the address cannot change between the check and the connection), every redirect checked again.
  */
 @Component
 public class LinkFetcher {
@@ -31,58 +38,96 @@ public class LinkFetcher {
     public record Fetched(String title, String text) {
     }
 
+    private record Page(int code, String location, String type, byte[] bytes) {
+    }
+
     private static final int MAX_BYTES = 10 * 1024 * 1024;
     private static final int MAX_CHARS = 400_000;
     private static final int MAX_REDIRECTS = 3;
 
-    private final HttpClient client = HttpClient.newBuilder()
-            .followRedirects(HttpClient.Redirect.NEVER)
-            .connectTimeout(Duration.ofSeconds(10))
+    /** The addresses that are checked are exactly the ones the connection will use. */
+    private static final class PublicOnlyDnsResolver implements DnsResolver {
+        @Override
+        public InetAddress[] resolve(String host) throws UnknownHostException {
+            InetAddress[] all = InetAddress.getAllByName(host);
+            for (InetAddress a : all) {
+                if (!isPublic(a)) {
+                    throw new UnknownHostException("blocked address");
+                }
+            }
+            return all;
+        }
+
+        @Override
+        public String resolveCanonicalHostname(String host) throws UnknownHostException {
+            InetAddress[] all = resolve(host);
+            return all.length == 0 ? host : all[0].getCanonicalHostName();
+        }
+    }
+
+    private final CloseableHttpClient client = HttpClients.custom()
+            .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
+                    .setDnsResolver(new PublicOnlyDnsResolver())
+                    .setDefaultConnectionConfig(ConnectionConfig.custom()
+                            .setConnectTimeout(Timeout.ofSeconds(10))
+                            .setSocketTimeout(Timeout.ofSeconds(20))
+                            .build())
+                    .build())
+            .setDefaultRequestConfig(RequestConfig.custom().setResponseTimeout(Timeout.ofSeconds(20)).build())
+            .disableRedirectHandling()
+            .disableCookieManagement()
+            .disableAutomaticRetries()
             .build();
 
     public Fetched fetch(String rawUrl) throws IOException {
         URI uri = validate(rawUrl);
         for (int hop = 0; hop <= MAX_REDIRECTS; hop++) {
-            HttpResponse<InputStream> response;
-            try {
-                response = client.send(HttpRequest.newBuilder(uri)
-                        .timeout(Duration.ofSeconds(20))
-                        .header("User-Agent", "EduNexBot/1.0 (+institute knowledge base)")
-                        .header("Accept", "text/html,application/pdf,text/plain;q=0.9,*/*;q=0.1")
-                        .GET().build(), HttpResponse.BodyHandlers.ofInputStream());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("interrupted");
-            }
-            int code = response.statusCode();
-            if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308) {
-                String location = response.headers().firstValue("location")
-                        .orElseThrow(() -> new IOException("redirect without location"));
-                response.body().close();
-                uri = validate(uri.resolve(location).toString());
+            Page page = get(uri);
+            if (List.of(301, 302, 303, 307, 308).contains(page.code())) {
+                if (page.location() == null) {
+                    throw new IOException("redirect without location");
+                }
+                uri = validate(uri.resolve(page.location()).toString());
                 continue;
             }
-            if (code != 200) {
-                response.body().close();
-                throw new IOException("the page answered HTTP " + code);
+            if (page.code() != 200) {
+                throw new IOException("the page answered HTTP " + page.code());
             }
-            byte[] bytes;
-            try (InputStream in = response.body()) {
-                bytes = in.readNBytes(MAX_BYTES + 1);
-            }
-            if (bytes.length > MAX_BYTES) {
+            if (page.bytes().length > MAX_BYTES) {
                 throw new IOException("the page is too large (10 MB maximum)");
             }
-            String type = response.headers().firstValue("content-type").orElse("").toLowerCase(Locale.ROOT);
-            return parse(uri, type, bytes);
+            return parse(uri, page.type(), page.bytes());
         }
         throw new IOException("too many redirects");
     }
 
+    private Page get(URI uri) throws IOException {
+        HttpGet request = new HttpGet(uri);
+        request.setHeader("User-Agent", "EduNexBot/1.0 (+institute knowledge base)");
+        request.setHeader("Accept", "text/html,application/pdf,text/plain;q=0.9,*/*;q=0.1");
+        return client.execute(request, response -> {
+            int code = response.getCode();
+            Header location = response.getFirstHeader("Location");
+            Header type = response.getFirstHeader("Content-Type");
+            byte[] bytes = new byte[0];
+            if (code == 200 && response.getEntity() != null) {
+                try (InputStream in = response.getEntity().getContent()) {
+                    bytes = in.readNBytes(MAX_BYTES + 1);
+                }
+            }
+            return new Page(code, location == null ? null : location.getValue(),
+                    type == null ? "" : type.getValue().toLowerCase(Locale.ROOT), bytes);
+        });
+    }
+
     private Fetched parse(URI uri, String type, byte[] bytes) throws IOException {
-        boolean pdf = type.contains("pdf") || (bytes.length > 4 && new String(bytes, 0, 4, StandardCharsets.ISO_8859_1).equals("%PDF"));
+        boolean pdf = type.contains("pdf")
+                || (bytes.length > 4 && new String(bytes, 0, 4, StandardCharsets.ISO_8859_1).equals("%PDF"));
         if (pdf) {
             try (PDDocument doc = Loader.loadPDF(bytes)) {
+                if (doc.getNumberOfPages() > 400) {
+                    throw new IOException("too many pages");
+                }
                 String name = uri.getPath() == null ? "" : uri.getPath().substring(uri.getPath().lastIndexOf('/') + 1);
                 return new Fetched(name, cap(new PDFTextStripper().getText(doc)));
             }
@@ -155,10 +200,16 @@ public class LinkFetcher {
         if (b.length == 4) {
             int x = b[0] & 0xFF;
             int y = b[1] & 0xFF;
-            if (x == 0 || (x == 100 && y >= 64 && y <= 127)) {
-                return false;
-            }
+            int z = b[2] & 0xFF;
+            return !(x == 0 || x >= 240
+                    || (x == 100 && y >= 64 && y <= 127)
+                    || (x == 192 && y == 0 && z <= 2)
+                    || (x == 198 && (y == 18 || y == 19))
+                    || (x == 198 && y == 51 && z == 100)
+                    || (x == 203 && y == 0 && z == 113));
         }
-        return !(b.length == 16 && (b[0] & 0xFE) == 0xFC);
+        int first = ((b[0] & 0xFF) << 8) | (b[1] & 0xFF);
+        boolean documentation = first == 0x2001 && (b[2] & 0xFF) == 0x0D && (b[3] & 0xFF) == 0xB8;
+        return !((b[0] & 0xFE) == 0xFC || documentation || first == 0x0064 || first == 0x2002);
     }
 }

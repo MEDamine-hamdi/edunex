@@ -21,6 +21,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final TokenRevocationService tokenRevocation;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String email = jwtService.extractEmail(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                    if (userDetails.isEnabled()) {
+                    if (userDetails.isEnabled() && !tokenRevocation.isRevoked(email, jwtService.extractIssuedAt(token))) {
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
                                         userDetails, null, userDetails.getAuthorities());

@@ -156,6 +156,9 @@ public class DocumentRequestService {
         }
         DocumentRequest r = find(id);
         User agent = userRepository.findByEmail(agentEmail).orElseThrow(() -> new AccessDeniedException("Unknown user"));
+        if (!FileSignatures.matches(ext, file)) {
+            throw new BadRequestException("The content of the file does not match its type");
+        }
         String oldKey = r.getFileKey();
         r.setFileKey(fileStorage.store(file));
         r.setFileName(name);

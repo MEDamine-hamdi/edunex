@@ -37,6 +37,9 @@ public final class LayoutPdfText {
 
     public static List<String> pages(byte[] pdf) throws IOException {
         try (PDDocument doc = Loader.loadPDF(pdf)) {
+            if (doc.getNumberOfPages() > 200) {
+                throw new IOException("too many pages");
+            }
             if (doc.isEncrypted()) {
                 throw new IOException("encrypted pdf");
             }

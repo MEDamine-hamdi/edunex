@@ -74,7 +74,9 @@ public class AssistantService {
         if (message.isEmpty()) {
             throw new BadRequestException("Message is empty");
         }
-        rateLimiter.check(email);
+        if (attachmentText == null) {
+            rateLimiter.check(email);
+        }
 
         StudentProfile student = materials.profile(email);
         Long subjectId = request.subjectId();

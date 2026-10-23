@@ -85,6 +85,9 @@ public class DocumentTextExtractor {
 
     private String pdf(byte[] bytes) throws IOException {
         try (PDDocument document = Loader.loadPDF(bytes)) {
+            if (document.getNumberOfPages() > 400) {
+                throw new UnsupportedFormatException("too many pages");
+            }
             if (document.isEncrypted()) {
                 throw new UnsupportedFormatException("encrypted pdf");
             }

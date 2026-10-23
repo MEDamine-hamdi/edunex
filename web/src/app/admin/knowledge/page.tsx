@@ -206,7 +206,7 @@ export default function KnowledgePage() {
                 <td className="px-5 py-4 text-right">
                   <div className="flex justify-end gap-2">
                     {d.sourceKind === "LINK" ? (
-                      <a href={d.url ?? "#"} target="_blank" rel="noopener noreferrer" className={smallBtn}>Ouvrir</a>
+                      <a href={d.url && /^https?:\/\//i.test(d.url) ? d.url : "#"} target="_blank" rel="noopener noreferrer" className={smallBtn}>Ouvrir</a>
                     ) : (
                       <button onClick={() => download(d)} className={smallBtn}>Télécharger</button>
                     )}
