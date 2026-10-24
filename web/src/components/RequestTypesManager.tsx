@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 import { ErrorBox, PageHeader, TextField, inputCls, primaryBtn, smallBtn, tableWrap, theadCls } from "./ui";
@@ -119,7 +120,7 @@ export function RequestTypesManager() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {loading && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {types.map((t) => (
               <tr key={t.id}>
                 <td className="px-5 py-3 font-medium text-slate-900">{t.name}{t.requiresDetails && <span className="ms-2 text-xs font-normal text-slate-500">(précisions demandées)</span>}</td>

@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { BarList, Panel, StatCard } from "@/components/Stats";
@@ -34,7 +35,7 @@ export default function PlatformDashboardPage() {
     <PlatformShell>
       <PageHeader title="Tableau de bord" subtitle="Vue d'ensemble de la plateforme." />
       <ErrorBox message={error} />
-      {!stats && !error && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {!stats && !error && <SectionLoader />}
 
       {stats && (
         <>

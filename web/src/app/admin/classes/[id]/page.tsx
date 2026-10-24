@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -340,7 +341,7 @@ export default function ManageClassPage() {
     <AdminShell>
       <Link href="/admin/classes" className="text-sm font-medium text-blue-600 hover:underline">← Retour aux classes</Link>
       <ErrorBox message={error} />
-      {!ov && !error && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {!ov && !error && <SectionLoader />}
       {ov && (
         <>
           <div className="mt-3">

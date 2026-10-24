@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { Fragment, KeyboardEvent, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useMe } from "@/components/RoleShell";
 import { ErrorBox, primaryBtn, smallBtn } from "@/components/ui";
@@ -278,7 +279,7 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
 
   const sessionList = (
     <ul className="mt-3 space-y-1">
-      {loading && <li className="px-3 py-2 text-sm text-slate-500">Chargement...</li>}
+      {loading && <li className="px-3 py-2 text-sm text-slate-500"><InlineLoader /></li>}
       {!loading && sessions.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">Aucune conversation.</li>}
       {sessions.map((s) => (
         <li key={s.id} className="flex items-center gap-1">

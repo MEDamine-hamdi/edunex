@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 import { fetchBlobUrl } from "@/lib/blob";
@@ -158,7 +159,7 @@ export function ProfileEditor() {
     }
   }
 
-  if (!profile) return <p className="text-slate-500">{error ?? "Chargement..."}</p>;
+  if (!profile) return <p className="text-slate-500">{error ?? <InlineLoader />}</p>;
 
   const initials = `${profile.firstName[0] ?? ""}${profile.lastName[0] ?? ""}`.toUpperCase();
   const card = "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm";

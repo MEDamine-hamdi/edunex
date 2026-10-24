@@ -1,12 +1,10 @@
 import { ApiError } from "./api";
-import { getToken } from "./auth";
 
-/** Authenticated download of any file endpoint (the token cannot travel in a plain link). */
+/** Download of any protected file endpoint (the session cookie is sent by the browser). */
 export async function downloadFromUrl(url: string, fallbackName: string) {
-  const token = getToken();
   let res: Response;
   try {
-    res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    res = await fetch(url);
   } catch {
     throw new ApiError(0, "Serveur injoignable.");
   }

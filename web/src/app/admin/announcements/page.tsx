@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { ErrorBox, PageHeader, TextField, inputCls, primaryBtn, smallBtn } from "@/components/ui";
@@ -171,7 +172,7 @@ export default function AnnouncementsPage() {
         </form>
       )}
 
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && items.length === 0 && <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Aucune annonce publiée.</p>}
       <div className="mt-6 space-y-4">
         {items.map((a) => (

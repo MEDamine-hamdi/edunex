@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/StudentShell";
@@ -37,7 +38,7 @@ function Content() {
     <>
       <PageHeader title={`Bonjour ${me.firstName}`} subtitle="Votre vie universitaire en un coup d'œil." />
       <ErrorBox message={error} />
-      {!data && !error && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {!data && !error && <SectionLoader />}
       {data && (
         <>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

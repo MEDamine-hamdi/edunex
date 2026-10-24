@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { ProfessorShell } from "@/components/ProfessorShell";
 import { ErrorBox, PageHeader } from "@/components/ui";
@@ -31,7 +32,7 @@ export default function ProfessorSubjectsPage() {
     <ProfessorShell>
       <PageHeader title="Mes matières" subtitle="Les matières qui vous sont affectées par l'administration." />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && subjects.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Aucune matière ne vous est affectée pour le moment. Contactez l&apos;administration.

@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { BarList, Panel, StatCard } from "@/components/Stats";
@@ -54,7 +55,7 @@ export default function AdminDashboardPage() {
     <AdminShell>
       <PageHeader title="Tableau de bord" subtitle="Vue d'ensemble de l'université." />
       <ErrorBox message={error} />
-      {!stats && !error && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {!stats && !error && <SectionLoader />}
 
       {stats && c && (
         <>

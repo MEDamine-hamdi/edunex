@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { ChangeEvent, FormEvent, InputHTMLAttributes, useCallback, useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { ApiError, apiFetch } from "@/lib/api";
@@ -178,7 +179,7 @@ export default function AgentsPage() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading && (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>
             )}
             {!loading && agents.length === 0 && (
               <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Aucun agent pour le moment.</td></tr>

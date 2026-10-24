@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { ProfessorShell } from "@/components/ProfessorShell";
 import { DocumentRow } from "@/components/CourseParts";
@@ -179,7 +180,7 @@ export default function ProfessorCoursesPage() {
         </form>
       )}
 
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && courses.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Vous n&apos;avez pas encore de cours.

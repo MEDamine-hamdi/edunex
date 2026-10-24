@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { ApiError, apiFetch } from "@/lib/api";
@@ -208,7 +209,7 @@ export default function EnrollmentsPage() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading && (
-              <tr><td colSpan={7} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>
             )}
             {!loading && rows.length === 0 && (
               <tr><td colSpan={7} className="px-5 py-8 text-center text-slate-500">Aucune inscription pour le moment.</td></tr>

@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/StudentShell";
 import { ErrorBox, PageHeader, inputCls, tableWrap, theadCls } from "@/components/ui";
@@ -62,7 +63,7 @@ export default function StudentAttendancePage() {
     <StudentShell>
       <PageHeader title="Mes absences" subtitle="Vos présences, absences et retards par matière." />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && stats.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Aucune donnée pour le moment. Vos présences apparaîtront ici une fois que vos professeurs auront fait l&apos;appel.

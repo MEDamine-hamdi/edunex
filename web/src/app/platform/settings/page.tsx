@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { ErrorBox, PageHeader, TextField, inputCls, primaryBtn, smallBtn, tableWrap, theadCls } from "@/components/ui";
@@ -93,7 +94,7 @@ export default function SettingsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading && <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {loading && <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {!loading && settings.length === 0 && (
               <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-500">Aucun paramètre pour le moment.</td></tr>
             )}

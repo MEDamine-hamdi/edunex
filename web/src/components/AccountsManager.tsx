@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, ReactNode, useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 
@@ -171,7 +172,7 @@ export function AccountsManager<T extends { id: number; status: Status }>({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading && (
-              <tr><td colSpan={colCount} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>
+              <tr><td colSpan={colCount} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>
             )}
             {!loading && rows.length === 0 && (
               <tr><td colSpan={colCount} className="px-5 py-8 text-center text-slate-500">Aucun compte pour le moment.</td></tr>

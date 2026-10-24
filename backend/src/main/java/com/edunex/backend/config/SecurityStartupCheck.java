@@ -34,6 +34,9 @@ public class SecurityStartupCheck implements CommandLineRunner {
     @Value("${app.public-url:}")
     private String publicUrl;
 
+    @Value("${app.security.cookie-secure:false}")
+    private boolean cookieSecure;
+
     @Override
     public void run(String... args) {
         List<String> problems = new ArrayList<>();
@@ -55,6 +58,9 @@ public class SecurityStartupCheck implements CommandLineRunner {
         }
         if (publicUrl.startsWith("http://") && !publicUrl.contains("localhost")) {
             problems.add("app.public-url is not https");
+        }
+        if (!cookieSecure) {
+            problems.add("the session cookie is not marked Secure (set APP_COOKIE_SECURE=true behind https)");
         }
         problems.forEach(p -> log.warn("SECURITY: {}", p));
         if (strict && !problems.isEmpty()) {

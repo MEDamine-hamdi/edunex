@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/StudentShell";
@@ -32,7 +33,7 @@ export default function StudentSubjectsPage() {
     <StudentShell>
       <PageHeader title="Mes matières" subtitle="Les matières de votre classe." />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && subjects.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Aucune matière pour le moment. Vous apparaîtrez ici dès que l&apos;administration vous aura

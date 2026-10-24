@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { useCallback, useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { ErrorBox, PageHeader, inputCls, smallBtn, tableWrap, theadCls } from "@/components/ui";
@@ -67,7 +68,7 @@ export default function PermissionsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading && <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {loading && <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {items.map((p) => (
               <tr key={p.id}>
                 <td className="px-5 py-3 font-mono text-xs text-slate-900">{p.code}</td>

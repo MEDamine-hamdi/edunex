@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
@@ -82,7 +83,7 @@ export default function ClassesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {loading && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {!loading && classes.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Aucune classe.</td></tr>}
             {classes.map((c) => (
               <tr key={c.id}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingScreen } from "@/components/Loading";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -14,5 +15,5 @@ export default function DashboardRedirect() {
       .catch(() => {});
   }, [router]);
 
-  return <p className="p-10 text-slate-500">Chargement...</p>;
+  return <LoadingScreen />;
 }

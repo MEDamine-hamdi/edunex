@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 import { ErrorBox, inputCls, primaryBtn, smallBtn } from "./ui";
@@ -121,7 +122,7 @@ export function WeekCalendar({ endpoint, mode, query = "", showClass, showProfes
         </span>
       </div>
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
 
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {days.map((d, i) => {

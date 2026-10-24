@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { StudentShell } from "@/components/StudentShell";
 import { ErrorBox, PageHeader, inputCls, tableWrap, theadCls } from "@/components/ui";
@@ -66,7 +67,7 @@ export default function StudentGradesPage() {
     <StudentShell>
       <PageHeader title="Mes notes" subtitle="Vos notes et vos moyennes (sur 20)." />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && subjects.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Aucune note pour le moment. Vos notes apparaîtront ici dès que l&apos;administration les aura saisies.

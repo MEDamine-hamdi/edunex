@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, Fragment, useCallback, useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { ApiError, apiFetch } from "@/lib/api";
@@ -139,7 +140,7 @@ export default function SubjectsPage() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading && (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>
             )}
             {!loading && subjects.length === 0 && (
               <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Aucune matière pour le moment.</td></tr>

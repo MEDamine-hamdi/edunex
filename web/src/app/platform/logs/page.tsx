@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { ErrorBox, PageHeader, inputCls, primaryBtn, smallBtn, tableWrap, theadCls } from "@/components/ui";
@@ -78,7 +79,7 @@ export default function LogsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {!data && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {!data && <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {data && data.items.length === 0 && (
               <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Aucune entrée.</td></tr>
             )}

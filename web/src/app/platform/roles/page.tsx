@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useCallback, useEffect, useState } from "react";
 import { PlatformShell } from "@/components/PlatformShell";
 import { ErrorBox, IdPicker, PageHeader } from "@/components/ui";
@@ -77,7 +78,7 @@ export default function RolesPage() {
         Inscriptions lit les étudiants (ACCOUNTS_MANAGE).
       </p>
 
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       <div className="mt-6 space-y-6">
         {roles.map((r) => (
           <section key={r.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

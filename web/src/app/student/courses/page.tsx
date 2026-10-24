@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { AssistantChat, ChatScope } from "@/components/AssistantChat";
 import { DocumentRow } from "@/components/CourseParts";
@@ -66,7 +67,7 @@ export default function StudentCoursesPage() {
         }
       />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
       {!loading && visible.length === 0 && (
         <p className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
           Aucun cours disponible pour le moment. Les cours apparaissent dès que vous êtes inscrit dans une

@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login, saveSession } from "@/lib/auth";
+import { login } from "@/lib/auth";
 import { homeFor } from "@/lib/roles";
 import { ArrowRightIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "./icons";
+import { LoadingOverlay } from "./Loading";
 
 export function LoginForm() {
   const router = useRouter();
@@ -20,8 +22,7 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const data = await login(email.trim(), password);
-      saveSession(data, remember);
+      const data = await login(email.trim(), password, remember);
       router.replace(homeFor(data.role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
@@ -35,6 +36,7 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} noValidate className="mt-8">
+      {loading && <LoadingOverlay />}
       {error && (
         <p role="alert" className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
@@ -60,22 +62,27 @@ export function LoginForm() {
         </button>
       </div>
 
-      <label className="mt-5 flex cursor-pointer items-center gap-3 text-sm text-stone-700">
-        <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}
-          className="h-5 w-5 rounded border-stone-300 accent-indigo-600" />
-        Se souvenir de moi
-      </label>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <label className="flex cursor-pointer items-center gap-3 text-sm text-stone-700">
+          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}
+            className="h-5 w-5 rounded border-stone-300 accent-indigo-600" />
+          Se souvenir de moi
+        </label>
+        <Link href="/forgot-password" className="text-sm font-semibold text-indigo-600 hover:underline">
+          Mot de passe oublié ?
+        </Link>
+      </div>
 
       <button type="submit" disabled={loading}
         className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-4 text-base font-semibold text-white shadow-lg shadow-indigo-600/25 transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:opacity-60">
-        {loading ? "Connexion..." : "Se connecter"}
-        {!loading && <ArrowRightIcon className="h-5 w-5" />}
+        Se connecter
+        <ArrowRightIcon className="h-5 w-5" />
       </button>
 
       <details className="mt-6 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-stone-700">
         <summary className="cursor-pointer font-semibold text-stone-800">Besoin d&apos;aide ?</summary>
         <p className="mt-2 leading-relaxed">
-          Mot de passe oublié, premier accès ou compte bloqué ? Rapprochez-vous du secrétariat de votre établissement : l&apos;administration pourra vous aider.
+          Premier accès ou compte bloqué ? Rapprochez-vous du secrétariat de votre établissement : l&apos;administration pourra vous aider.
         </p>
       </details>
     </form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { SectionLoader } from "@/components/Loading";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
@@ -162,7 +163,7 @@ export function NotificationsPanel() {
         action={unread > 0 ? <button onClick={markAll} className={smallBtn}>Tout marquer comme lu</button> : undefined}
       />
       <ErrorBox message={error} />
-      {loading && <p className="mt-6 text-slate-500">Chargement...</p>}
+      {loading && <SectionLoader />}
 
       <div className="mt-6 grid gap-8 xl:grid-cols-2">
         <section>

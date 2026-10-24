@@ -1,5 +1,6 @@
 "use client";
 
+import { InlineLoader } from "@/components/Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 import { downloadFromUrl } from "@/lib/download";
@@ -113,7 +114,7 @@ export function RequestsInbox() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Chargement...</td></tr>}
+            {loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500"><InlineLoader /></td></tr>}
             {!loading && items.length === 0 && <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Aucune demande.</td></tr>}
             {items.map((r) => {
               const d = drafts[r.id];

@@ -1,5 +1,3 @@
-import { clearSession, getToken } from "./auth";
-
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -8,14 +6,12 @@ export class ApiError extends Error {
   }
 }
 
-function authHeader(): Record<string, string> {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+const PUBLIC_PAGES = ["/login", "/forgot-password", "/reset-password", "/confirm-email"];
 
 function handleUnauthorized() {
-  clearSession();
-  if (typeof window !== "undefined") window.location.replace("/login");
+  if (typeof window !== "undefined" && !PUBLIC_PAGES.includes(window.location.pathname)) {
+    window.location.replace("/login");
+  }
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -26,7 +22,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
       ...init,
       headers: {
         ...(isForm ? {} : { "Content-Type": "application/json" }),
-        ...authHeader(),
+        "X-Requested-With": "XMLHttpRequest",
         ...(init.headers ?? {}),
       },
     });
@@ -59,7 +55,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 export async function downloadDocument(id: number, fallbackName: string) {
   let res: Response;
   try {
-    res = await fetch(`/api/documents/${id}/download`, { headers: authHeader() });
+    res = await fetch(`/api/documents/${id}/download`);
   } catch {
     throw new ApiError(0, "Serveur injoignable.");
   }

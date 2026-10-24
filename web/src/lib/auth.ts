@@ -1,5 +1,5 @@
 export type LoginResponse = {
-  token: string;
+  token: string | null;
   type: string;
   id: number;
   email: string;
@@ -8,48 +8,75 @@ export type LoginResponse = {
   role: string | null;
 };
 
-const TOKEN_KEY = "edunex_token";
+// "X-Requested-With" is required by the server for requests that change data (protection against forged requests)
+const JSON_HEADERS = { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" };
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
+async function messageOf(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    if (data?.fields) return Object.entries(data.fields).map(([k, v]) => `${k} : ${v}`).join(", ");
+    if (data?.error) return data.error;
+  } catch {
+    /* no JSON body */
+  }
+  return fallback;
+}
+
+export async function login(email: string, password: string, remember: boolean): Promise<LoginResponse> {
   let res: Response;
   try {
     res = await fetch("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ email, password, remember }),
     });
   } catch {
     throw new Error("Serveur injoignable. Vérifiez que le backend est démarré.");
   }
-
   if (!res.ok) {
     let message = "Une erreur est survenue. Réessayez.";
-    try {
-      const data = await res.json();
-      if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
-      else if (res.status === 401) message = "Email ou mot de passe incorrect.";
-      else if (res.status === 403) message = "Ce compte n'est pas actif.";
-      else if (data?.fields) message = "Veuillez saisir un email valide et un mot de passe.";
-      else if (data?.error) message = data.error;
-    } catch {
-      if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
-      else if (res.status === 401) message = "Email ou mot de passe incorrect.";
-    }
+    if (res.status === 401) message = "Email ou mot de passe incorrect.";
+    else if (res.status === 403) message = "Ce compte n'est pas actif.";
+    else if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
+    else if (res.status === 400) message = "Veuillez saisir un email valide et un mot de passe.";
     throw new Error(message);
   }
   return res.json();
 }
 
-export function saveSession(data: LoginResponse, remember: boolean) {
-  clearSession();
-  (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, data.token);
+/** Ends the session: the server deletes the cookie. */
+export async function logout(): Promise<void> {
+  try {
+    await fetch("/api/auth/logout", { method: "POST", headers: JSON_HEADERS });
+  } catch {
+    /* the cookie expires by itself */
+  }
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY);
+/** True when the browser has a valid session. Never redirects (used by the login page). */
+export async function hasSession(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/users/me", { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
-export function clearSession() {
-  localStorage.removeItem(TOKEN_KEY);
-  sessionStorage.removeItem(TOKEN_KEY);
+/** POST for the pages that do not need a session (forgotten password, links received by e-mail). */
+export async function publicPost<T = unknown>(path: string, body: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(path, { method: "POST", headers: JSON_HEADERS, body: JSON.stringify(body) });
+  } catch {
+    throw new Error("Serveur injoignable. Vérifiez votre connexion.");
+  }
+  if (!res.ok) {
+    const message =
+      res.status === 429
+        ? "Trop de demandes. Réessayez dans quelques minutes."
+        : await messageOf(res, "Une erreur est survenue. Réessayez.");
+    throw Object.assign(new Error(message), { status: res.status });
+  }
+  return res.status === 204 ? (undefined as T) : res.json();
 }

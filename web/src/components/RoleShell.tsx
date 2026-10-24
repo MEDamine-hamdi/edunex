@@ -1,10 +1,11 @@
 "use client";
 
+import { LoadingScreen } from "@/components/Loading";
 import { ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { clearSession } from "@/lib/auth";
+import { logout as endSession } from "@/lib/auth";
 import { homeFor, notificationsFor, profileFor } from "@/lib/roles";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
@@ -31,7 +32,7 @@ export function useMe(): Me {
   return me;
 }
 
-// Kept between page navigations so the layout does not flash "Chargement..." each time
+// Kept between page navigations so the layout does not flash the loading screen each time
 let cachedMe: Me | null = null;
 
 type Props = {
@@ -66,13 +67,13 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
     mainRef.current?.scrollTo({ top: 0 });
   }, [pathname]);
 
-  function logout() {
+  async function logout() {
     cachedMe = null;
-    clearSession();
+    await endSession();
     router.replace("/login");
   }
 
-  if (!me) return <p className="p-10 text-slate-500">Chargement...</p>;
+  if (!me) return <LoadingScreen />;
 
   const isActive = (item: NavItem) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
