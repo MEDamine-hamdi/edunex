@@ -1,4 +1,5 @@
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { LoginForm } from "@/components/LoginForm";
 import { Logo } from "@/components/Logo";
 import { RedirectIfLoggedIn } from "@/components/RedirectIfLoggedIn";
@@ -15,7 +16,10 @@ export default function LoginPage() {
     <main className="relative grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       <RedirectIfLoggedIn />
       <header className="absolute inset-x-0 top-0 z-10 flex justify-end px-6 py-5">
-        <LanguageSwitcher />
+        <div className="flex items-center gap-3">
+          <ThemeSwitcher />
+          <LanguageSwitcher />
+        </div>
       </header>
 
       <section className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-amber-50 via-rose-50 to-indigo-100 px-12 py-10 lg:flex xl:px-20">

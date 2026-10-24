@@ -1,14 +1,15 @@
 "use client";
 
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { clearSession } from "@/lib/auth";
 import { homeFor, notificationsFor, profileFor } from "@/lib/roles";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export type Me = {
   id: number;
@@ -44,6 +45,7 @@ type Props = {
 export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
   const [me, setMe] = useState<Me | null>(cachedMe?.role === allowedRole ? cachedMe : null);
 
   useEffect(() => {
@@ -58,6 +60,11 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
       })
       .catch(() => {});
   }, [allowedRole, router]);
+
+  // a new page starts at the top of the content area
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   function logout() {
     cachedMe = null;
@@ -78,16 +85,20 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
 
   return (
     <MeContext.Provider value={me}>
-      <div className="min-h-screen bg-slate-50">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-4">
+      {/* The window never scrolls: header and sidebar stay in place, only <main> scrolls */}
+      <div className="flex h-dvh flex-col overflow-hidden bg-slate-50 dark:bg-black">
+        <header className="relative z-30 flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-3">
           <div className="flex flex-wrap items-center gap-4">
-            <Link href={homeFor(me.role)} aria-label="Tableau de bord"><Logo /></Link>
+            <Link href={homeFor(me.role)} aria-label="Tableau de bord">
+              <Logo />
+            </Link>
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}>{badge}</span>
           </div>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-3 text-sm">
             <LanguageSwitcher />
+            <ThemeSwitcher />
             <NotificationBell href={notificationsFor(me.role)} />
-            <Link href={profileFor(me.role)} className="text-slate-600 hover:text-blue-700">
+            <Link href={profileFor(me.role)} className="hidden text-slate-600 hover:text-blue-700 sm:inline">
               {me.firstName} {me.lastName}
             </Link>
             <button
@@ -100,7 +111,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
         </header>
 
         {/* Mobile menu */}
-        <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 md:hidden">
+        <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 md:hidden">
           {nav.filter((i) => !i.soon).map((item) => (
             <Link
               key={item.href}
@@ -114,8 +125,9 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
           ))}
         </nav>
 
-        <div className="flex">
-          <nav className="hidden min-h-[calc(100vh-73px)] w-64 shrink-0 border-r border-slate-200 bg-white p-4 md:block">
+        <div className="flex min-h-0 flex-1">
+          {/* Sidebar: fixed, with its own scroll when it is too long */}
+          <nav className="hidden w-64 shrink-0 overflow-y-auto overscroll-contain border-r border-slate-200 bg-white p-4 md:block">
             <ul className="space-y-1">
               {nav.map((item) => (
                 <li key={item.label}>
@@ -138,7 +150,10 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
               ))}
             </ul>
           </nav>
-          <main className="min-w-0 flex-1 p-6">{children}</main>
+
+          <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-6">
+            {children}
+          </main>
         </div>
       </div>
     </MeContext.Provider>

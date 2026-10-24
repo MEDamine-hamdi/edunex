@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -9,3 +11,137 @@ body {
 [dir="rtl"] .text-left { text-align: right; }
 [dir="rtl"] .text-right { text-align: left; }
 [dir="rtl"] .border-r { border-right-width: 0; border-left-width: 1px; }
+
+/* ===== DARK MODE ===== */
+.dark {
+  color-scheme: dark;
+  --color-white: #0b0b0c;  --color-slate-50: #131315;
+  --color-slate-100: #1a1a1d;
+  --color-slate-200: #2a2a2e;
+  --color-slate-300: #3a3a40;
+  --color-slate-400: #71717a;
+  --color-slate-500: #a1a1aa;
+  --color-slate-600: #c4c4cc;
+  --color-slate-700: #dcdce1;
+  --color-slate-800: #ececf0;
+  --color-slate-900: #fafafa;
+  --color-slate-950: #ffffff;
+  --color-stone-50: #131315;
+  --color-stone-100: #1a1a1d;
+  --color-stone-200: #2a2a2e;
+  --color-stone-300: #3a3a40;
+  --color-stone-400: #71717a;
+  --color-stone-500: #a1a1aa;
+  --color-stone-600: #c4c4cc;
+  --color-stone-700: #dcdce1;
+  --color-stone-800: #ececf0;
+  --color-stone-900: #fafafa;
+  --color-stone-950: #ffffff;
+  --color-blue-50: color-mix(in oklab, var(--color-blue-500, #3b82f6) 10%, transparent);
+  --color-blue-100: color-mix(in oklab, var(--color-blue-500, #3b82f6) 16%, transparent);
+  --color-blue-200: color-mix(in oklab, var(--color-blue-500, #3b82f6) 24%, transparent);
+  --color-blue-300: color-mix(in oklab, var(--color-blue-500, #3b82f6) 36%, transparent);
+  --color-sky-50: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 10%, transparent);
+  --color-sky-100: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 16%, transparent);
+  --color-sky-200: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 24%, transparent);
+  --color-sky-300: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 36%, transparent);
+  --color-indigo-50: color-mix(in oklab, var(--color-indigo-500, #6366f1) 10%, transparent);
+  --color-indigo-100: color-mix(in oklab, var(--color-indigo-500, #6366f1) 16%, transparent);
+  --color-indigo-200: color-mix(in oklab, var(--color-indigo-500, #6366f1) 24%, transparent);
+  --color-indigo-300: color-mix(in oklab, var(--color-indigo-500, #6366f1) 36%, transparent);
+  --color-violet-50: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 10%, transparent);
+  --color-violet-100: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 16%, transparent);
+  --color-violet-200: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 24%, transparent);
+  --color-violet-300: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 36%, transparent);
+  --color-emerald-50: color-mix(in oklab, var(--color-emerald-500, #10b981) 10%, transparent);
+  --color-emerald-100: color-mix(in oklab, var(--color-emerald-500, #10b981) 16%, transparent);
+  --color-emerald-200: color-mix(in oklab, var(--color-emerald-500, #10b981) 24%, transparent);
+  --color-emerald-300: color-mix(in oklab, var(--color-emerald-500, #10b981) 36%, transparent);
+  --color-red-50: color-mix(in oklab, var(--color-red-500, #ef4444) 10%, transparent);
+  --color-red-100: color-mix(in oklab, var(--color-red-500, #ef4444) 16%, transparent);
+  --color-red-200: color-mix(in oklab, var(--color-red-500, #ef4444) 24%, transparent);
+  --color-red-300: color-mix(in oklab, var(--color-red-500, #ef4444) 36%, transparent);
+  --color-rose-50: color-mix(in oklab, var(--color-rose-500, #f43f5e) 10%, transparent);
+  --color-rose-100: color-mix(in oklab, var(--color-rose-500, #f43f5e) 16%, transparent);
+  --color-rose-200: color-mix(in oklab, var(--color-rose-500, #f43f5e) 24%, transparent);
+  --color-rose-300: color-mix(in oklab, var(--color-rose-500, #f43f5e) 36%, transparent);
+  --color-orange-50: color-mix(in oklab, var(--color-orange-500, #f97316) 10%, transparent);
+  --color-orange-100: color-mix(in oklab, var(--color-orange-500, #f97316) 16%, transparent);
+  --color-orange-200: color-mix(in oklab, var(--color-orange-500, #f97316) 24%, transparent);
+  --color-orange-300: color-mix(in oklab, var(--color-orange-500, #f97316) 36%, transparent);
+  --color-amber-50: color-mix(in oklab, var(--color-amber-500, #f59e0b) 10%, transparent);
+  --color-amber-100: color-mix(in oklab, var(--color-amber-500, #f59e0b) 16%, transparent);
+  --color-amber-200: color-mix(in oklab, var(--color-amber-500, #f59e0b) 24%, transparent);
+  --color-amber-300: color-mix(in oklab, var(--color-amber-500, #f59e0b) 36%, transparent);
+}
+
+.dark body { background-color: #000; }
+
+/* white text stays white (the white variable is now the dark card color) */
+.dark .text-white { color: #fff; }
+.dark .fill-white { fill: #fff; }
+.dark .stroke-white { stroke: #fff; }
+
+/* dark slate used as a background (code blocks, overlays) must stay dark */
+.dark .bg-slate-900 { background-color: #0f0f11; }
+.dark .bg-slate-950 { background-color: #000; }
+.dark .bg-slate-900\/30,
+.dark .bg-slate-900\/40 { background-color: rgb(0 0 0 / 0.65); }
+.dark .text-slate-100 { color: #e4e4e7; }
+
+/* login page background */
+.dark .bg-stone-50 { background-color: #000; }.dark .text-blue-600 { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 70%, white); }
+.dark .text-blue-700 { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 55%, white); }
+.dark .text-blue-800 { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 45%, white); }
+.dark .text-blue-900 { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 35%, white); }
+.dark .hover\:text-blue-600:hover { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 70%, white); }
+.dark .hover\:text-blue-700:hover { color: color-mix(in oklab, var(--color-blue-500, #3b82f6) 55%, white); }
+.dark .text-sky-600 { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 70%, white); }
+.dark .text-sky-700 { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 55%, white); }
+.dark .text-sky-800 { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 45%, white); }
+.dark .text-sky-900 { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 35%, white); }
+.dark .hover\:text-sky-600:hover { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 70%, white); }
+.dark .hover\:text-sky-700:hover { color: color-mix(in oklab, var(--color-sky-500, #0ea5e9) 55%, white); }
+.dark .text-indigo-600 { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 70%, white); }
+.dark .text-indigo-700 { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 55%, white); }
+.dark .text-indigo-800 { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 45%, white); }
+.dark .text-indigo-900 { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 35%, white); }
+.dark .hover\:text-indigo-600:hover { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 70%, white); }
+.dark .hover\:text-indigo-700:hover { color: color-mix(in oklab, var(--color-indigo-500, #6366f1) 55%, white); }
+.dark .text-violet-600 { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 70%, white); }
+.dark .text-violet-700 { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 55%, white); }
+.dark .text-violet-800 { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 45%, white); }
+.dark .text-violet-900 { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 35%, white); }
+.dark .hover\:text-violet-600:hover { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 70%, white); }
+.dark .hover\:text-violet-700:hover { color: color-mix(in oklab, var(--color-violet-500, #8b5cf6) 55%, white); }
+.dark .text-emerald-600 { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 70%, white); }
+.dark .text-emerald-700 { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 55%, white); }
+.dark .text-emerald-800 { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 45%, white); }
+.dark .text-emerald-900 { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 35%, white); }
+.dark .hover\:text-emerald-600:hover { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 70%, white); }
+.dark .hover\:text-emerald-700:hover { color: color-mix(in oklab, var(--color-emerald-500, #10b981) 55%, white); }
+.dark .text-red-600 { color: color-mix(in oklab, var(--color-red-500, #ef4444) 70%, white); }
+.dark .text-red-700 { color: color-mix(in oklab, var(--color-red-500, #ef4444) 55%, white); }
+.dark .text-red-800 { color: color-mix(in oklab, var(--color-red-500, #ef4444) 45%, white); }
+.dark .text-red-900 { color: color-mix(in oklab, var(--color-red-500, #ef4444) 35%, white); }
+.dark .hover\:text-red-600:hover { color: color-mix(in oklab, var(--color-red-500, #ef4444) 70%, white); }
+.dark .hover\:text-red-700:hover { color: color-mix(in oklab, var(--color-red-500, #ef4444) 55%, white); }
+.dark .text-rose-600 { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 70%, white); }
+.dark .text-rose-700 { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 55%, white); }
+.dark .text-rose-800 { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 45%, white); }
+.dark .text-rose-900 { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 35%, white); }
+.dark .hover\:text-rose-600:hover { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 70%, white); }
+.dark .hover\:text-rose-700:hover { color: color-mix(in oklab, var(--color-rose-500, #f43f5e) 55%, white); }
+.dark .text-orange-600 { color: color-mix(in oklab, var(--color-orange-500, #f97316) 70%, white); }
+.dark .text-orange-700 { color: color-mix(in oklab, var(--color-orange-500, #f97316) 55%, white); }
+.dark .text-orange-800 { color: color-mix(in oklab, var(--color-orange-500, #f97316) 45%, white); }
+.dark .text-orange-900 { color: color-mix(in oklab, var(--color-orange-500, #f97316) 35%, white); }
+.dark .hover\:text-orange-600:hover { color: color-mix(in oklab, var(--color-orange-500, #f97316) 70%, white); }
+.dark .hover\:text-orange-700:hover { color: color-mix(in oklab, var(--color-orange-500, #f97316) 55%, white); }
+.dark .text-amber-600 { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 70%, white); }
+.dark .text-amber-700 { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 55%, white); }
+.dark .text-amber-800 { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 45%, white); }
+.dark .text-amber-900 { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 35%, white); }
+.dark .hover\:text-amber-600:hover { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 70%, white); }
+.dark .hover\:text-amber-700:hover { color: color-mix(in oklab, var(--color-amber-500, #f59e0b) 55%, white); }
+

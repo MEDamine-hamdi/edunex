@@ -167,7 +167,7 @@ export function AssistantChat({ scope, compact = false }: { scope?: ChatScope; c
   }, [loadSessions, query]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, sending]);
 
   async function openSession(id: number) {
