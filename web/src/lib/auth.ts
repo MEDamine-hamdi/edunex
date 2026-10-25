@@ -34,11 +34,13 @@ export async function login(email: string, password: string, remember: boolean):
     throw new Error("Serveur injoignable. Vérifiez que le backend est démarré.");
   }
   if (!res.ok) {
-    let message = "Une erreur est survenue. Réessayez.";
+    let message = `Une erreur est survenue (code ${res.status}). Réessayez.`;
     if (res.status === 401) message = "Email ou mot de passe incorrect.";
     else if (res.status === 403) message = "Ce compte n'est pas actif.";
     else if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
     else if (res.status === 400) message = "Veuillez saisir un email valide et un mot de passe.";
+    else if (res.status === 404) message = "Serveur introuvable : vérifiez l'adresse du backend (BACKEND_URL).";
+    else if (res.status >= 500) message = `Le serveur ne répond pas correctement (code ${res.status}). Réessayez dans un instant.`;
     throw new Error(message);
   }
   return res.json();
