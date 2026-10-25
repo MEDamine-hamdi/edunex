@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { AuthLayout, authButton, authInput } from "@/components/AuthLayout";
 import { publicPost } from "@/lib/auth";
 
@@ -13,9 +13,12 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
 
   // the secret link is read once, then removed from the address bar and the history
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     const t = new URLSearchParams(window.location.search).get("token");
     setToken(t);
     setReady(true);

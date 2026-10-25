@@ -56,6 +56,9 @@ public class SecurityStartupCheck implements CommandLineRunner {
         if (apiDocs) {
             problems.add("the API documentation (Swagger) is enabled");
         }
+        if (publicUrl.isBlank() || publicUrl.contains("localhost") || publicUrl.contains("127.0.0.1")) {
+            problems.add("app.public-url (APP_PUBLIC_URL) points to localhost: the links in e-mails (password reset, notifications) will not work for users");
+        }
         if (publicUrl.startsWith("http://") && !publicUrl.contains("localhost")) {
             problems.add("app.public-url is not https");
         }
