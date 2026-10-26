@@ -10,7 +10,6 @@ import com.edunex.backend.repository.AdministrationAgentRepository;
 import com.edunex.backend.repository.RoleRepository;
 import com.edunex.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,7 @@ public class AdministrationAgentService {
     private final AdministrationAgentRepository agentRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AccountCredentialsService credentials;
 
     @Transactional
     public AgentResponse create(CreateAgentRequest req) {
@@ -38,12 +37,12 @@ public class AdministrationAgentService {
         agent.setFirstName(req.firstName());
         agent.setLastName(req.lastName());
         agent.setEmail(req.email());
-        agent.setPassword(passwordEncoder.encode(req.password()));
         agent.setPhone(req.phone());
         agent.setEmployeeNumber(req.employeeNumber());
         agent.setService(req.service());
         agent.setRole(roleRepository.findByName("ROLE_ADMIN_AGENT")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_ADMIN_AGENT not found")));
+        credentials.issue(agent);
 
         return toResponse(agentRepository.save(agent));
     }

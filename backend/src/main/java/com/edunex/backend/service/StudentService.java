@@ -10,7 +10,6 @@ import com.edunex.backend.repository.RoleRepository;
 import com.edunex.backend.repository.StudentRepository;
 import com.edunex.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,7 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AccountCredentialsService credentials;
 
     @Transactional
     public StudentResponse create(CreateStudentRequest req) {
@@ -38,7 +37,6 @@ public class StudentService {
         s.setFirstName(req.firstName());
         s.setLastName(req.lastName());
         s.setEmail(req.email());
-        s.setPassword(passwordEncoder.encode(req.password()));
         s.setPhone(req.phone());
         s.setStudentNumber(req.studentNumber());
         s.setEnrollmentYear(req.enrollmentYear());
@@ -46,6 +44,7 @@ public class StudentService {
         s.setSpecialty(req.specialty());
         s.setRole(roleRepository.findByName("ROLE_STUDENT")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_STUDENT not found")));
+        credentials.issue(s);
 
         return toResponse(studentRepository.save(s));
     }

@@ -26,7 +26,6 @@ export default function StudentsPage() {
           { key: "firstName", label: "Prénom", required: true },
           { key: "lastName", label: "Nom", required: true },
           { key: "email", label: "Email", type: "email", required: true },
-          { key: "password", label: "Mot de passe (8 caractères min.)", type: "password", required: true },
           { key: "phone", label: "Téléphone" },
           { key: "studentNumber", label: "Numéro étudiant", required: true },
           { key: "enrollmentYear", label: "Année d'inscription", type: "number" },

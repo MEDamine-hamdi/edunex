@@ -28,3 +28,8 @@ mobile/.flutter-plugins-dependencies
 backend/config/
 
 backend/storage/
+
+backend/config/
+
+*_dump*.txt
+backend/config/

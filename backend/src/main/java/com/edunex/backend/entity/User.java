@@ -32,6 +32,9 @@ public class User {
     @Column()
     private String password;
 
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
+    private boolean mustChangePassword = false;
+
     @Column(length = 30)
     private String phone;
 
