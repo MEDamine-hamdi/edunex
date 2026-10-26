@@ -47,6 +47,7 @@ export function AccountsManager<T extends { id: number; status: Status }>({
   const [form, setForm] = useState<Record<string, string>>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -66,9 +67,10 @@ export function AccountsManager<T extends { id: number; status: Status }>({
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
+    setInfo(null);
     setSaving(true);
     const body: Record<string, unknown> = {};
-    for (const f of fields) {
+    for (const f of fields.filter((x) => x.type !== "password")) {
       const raw = form[f.key] ?? "";
       if (f.type === "password") body[f.key] = raw;
       else {
@@ -79,6 +81,7 @@ export function AccountsManager<T extends { id: number; status: Status }>({
     try {
       const created = await apiFetch<T>(endpoint, { method: "POST", body: JSON.stringify(body) });
       setRows((prev) => [...prev, created]);
+      setInfo("Compte créé : un e-mail contenant l'adresse de connexion et un mot de passe provisoire a été envoyé à " + String(body.email) + ".");
       setForm(emptyForm());
       setShowForm(false);
     } catch (err) {
@@ -126,15 +129,22 @@ export function AccountsManager<T extends { id: number; status: Status }>({
         </p>
       )}
 
+      {info && (
+        <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{info}</p>
+      )}
+
       {showForm && (
         <form onSubmit={onCreate} className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="mb-4 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+              Aucun mot de passe à saisir : un mot de passe provisoire est généré et envoyé par e-mail à la personne. Elle devra le remplacer dès sa première connexion.
+            </p>
           {formError && (
             <p role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {formError}
             </p>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
-            {fields.map((f) => (
+            {fields.filter((f) => f.type !== "password").map((f) => (
               <label key={f.key} className="block text-sm font-medium text-slate-700">
                 {f.label}
                 <input

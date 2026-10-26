@@ -23,7 +23,7 @@ export function LoginForm() {
     setLoading(true);
     try {
       const data = await login(email.trim(), password, remember);
-      router.replace(homeFor(data.role));
+      router.replace(data.mustChangePassword ? "/change-password" : homeFor(data.role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue. Réessayez.");
       setLoading(false);

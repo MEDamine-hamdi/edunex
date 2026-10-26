@@ -39,7 +39,10 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     let message = "Une erreur est survenue.";
     try {
       const data = await res.json();
-      if (res.status === 403) message = "Accès refusé.";
+      if (res.status === 403 && data?.error === "PASSWORD_CHANGE_REQUIRED") {
+        if (typeof window !== "undefined" && window.location.pathname !== "/change-password") window.location.replace("/change-password");
+        message = "Changement de mot de passe requis.";
+      } else if (res.status === 403) message = "Accès refusé.";
       else if (data?.fields)
         message = Object.entries(data.fields).map(([k, v]) => `${k} : ${v}`).join(", ");
       else if (data?.error) message = data.error;

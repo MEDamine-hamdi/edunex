@@ -6,6 +6,7 @@ export type LoginResponse = {
   firstName: string;
   lastName: string;
   role: string | null;
+  mustChangePassword?: boolean;
 };
 
 // "X-Requested-With" is required by the server for requests that change data (protection against forged requests)
@@ -36,7 +37,7 @@ export async function login(email: string, password: string, remember: boolean):
   if (!res.ok) {
     let message = `Une erreur est survenue (code ${res.status}). Réessayez.`;
     if (res.status === 401) message = "Email ou mot de passe incorrect.";
-    else if (res.status === 403) message = "Ce compte n'est pas actif.";
+    else if (res.status === 403) message = (await res.json().catch(() => null))?.error === "TEMPORARY_PASSWORD_EXPIRED" ? "Votre mot de passe provisoire a expiré. Utilisez « Mot de passe oublié ? » pour en choisir un nouveau." : "Ce compte n'est pas actif.";
     else if (res.status === 429) message = "Trop de tentatives échouées. Réessayez dans quelques minutes.";
     else if (res.status === 400) message = "Veuillez saisir un email valide et un mot de passe.";
     else if (res.status === 404) message = "Serveur introuvable : vérifiez l'adresse du backend (BACKEND_URL).";

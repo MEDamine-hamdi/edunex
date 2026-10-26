@@ -52,6 +52,10 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
   useEffect(() => {
     apiFetch<Me>("/api/users/me")
       .then((data) => {
+        if ((data as { mustChangePassword?: boolean }).mustChangePassword) {
+          router.replace("/change-password");
+          return;
+        }
         if (data.role === allowedRole) {
           cachedMe = data;
           setMe(data);
