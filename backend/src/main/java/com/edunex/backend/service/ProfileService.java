@@ -38,6 +38,24 @@ public class ProfileService {
     private final FileStorage fileStorage;
     private final com.edunex.backend.security.TokenRevocationService tokenRevocation;
 
+    @Transactional
+    public void firstPassword(String email, ChangePasswordRequest req) {
+        User u = user(email);
+        if (!u.isMustChangePassword()) {
+            throw new BadRequestException("No password change is pending");
+        }
+        if (!passwordEncoder.matches(req.currentPassword(), u.getPassword())) {
+            throw new BadRequestException("Incorrect password");
+        }
+        if (passwordEncoder.matches(req.newPassword(), u.getPassword())) {
+            throw new BadRequestException("New password must be different from the current one");
+        }
+        u.setPassword(passwordEncoder.encode(req.newPassword()));
+        u.setMustChangePassword(false);
+        u.setTemporaryPasswordExpiresAt(null);
+        userRepository.save(u);
+    }
+
     public record PhotoFile(Resource resource, String filename) {
     }
 

@@ -3,6 +3,7 @@ package com.edunex.backend.controller;
 import com.edunex.backend.dto.LoginRequest;
 import com.edunex.backend.dto.LoginResponse;
 import com.edunex.backend.entity.User;
+import com.edunex.backend.exception.TemporaryPasswordExpiredException;
 import com.edunex.backend.exception.TooManyRequestsException;
 import com.edunex.backend.repository.UserRepository;
 import com.edunex.backend.security.JwtService;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -59,6 +62,10 @@ public class AuthController {
         throttle.reset(account);
 
         User user = userRepository.findByEmail(request.email()).orElseThrow();
+        if (user.isMustChangePassword() && user.getTemporaryPasswordExpiresAt() != null
+                && user.getTemporaryPasswordExpiresAt().isBefore(Instant.now())) {
+            throw new TemporaryPasswordExpiredException();
+        }
         String roleName = user.getRole() != null ? user.getRole().getName() : null;
         String token = jwtService.generateToken(user.getEmail(), roleName);
         activityLogService.registerForEmail("LOGIN", "User", user.getEmail(), ip);
@@ -70,7 +77,7 @@ public class AuthController {
         }
         return ResponseEntity.ok(new LoginResponse(
                 mobile ? token : null, "Bearer", user.getId(), user.getEmail(),
-                user.getFirstName(), user.getLastName(), roleName));
+                user.getFirstName(), user.getLastName(), roleName, user.isMustChangePassword()));
     }
 
     @PostMapping("/logout")

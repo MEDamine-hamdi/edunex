@@ -24,6 +24,7 @@ public class UserController {
                 user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(),
                 user.getPhone(),
                 user.getRole() != null ? user.getRole().getName() : null,
-                user.getStatus().name()));
+                user.getStatus().name(),
+                user.isMustChangePassword()));
     }
 }

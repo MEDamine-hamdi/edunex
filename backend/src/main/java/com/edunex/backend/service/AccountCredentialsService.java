@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +22,7 @@ public class AccountCredentialsService {
     private static final String LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
     private static final String DIGITS = "23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final Duration VALIDITY = Duration.ofHours(72);
 
     private final PasswordEncoder passwordEncoder;
     private final MailOutboxService mail;
@@ -36,11 +39,12 @@ public class AccountCredentialsService {
         String temp = generate();
         user.setPassword(passwordEncoder.encode(temp));
         user.setMustChangePassword(true);
+        user.setTemporaryPasswordExpiresAt(Instant.now().plus(VALIDITY));
 
         String base = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
         String intro = "Votre compte EduNex a \u00e9t\u00e9 cr\u00e9\u00e9. Identifiant : " + user.getEmail()
                 + " - Mot de passe provisoire : " + temp
-                + ". Vous devrez le changer \u00e0 votre premi\u00e8re connexion.";
+                + ". Il est valable 72 heures et vous devrez le changer \u00e0 votre premi\u00e8re connexion.";
         mail.enqueueDirect(user.getEmail(), user.getFirstName() + " " + user.getLastName(),
                 "[EduNex] Vos identifiants de connexion",
                 MailTemplates.action(user.getFirstName(), "Bienvenue sur EduNex", intro,

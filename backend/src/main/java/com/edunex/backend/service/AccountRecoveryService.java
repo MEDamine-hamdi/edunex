@@ -80,6 +80,7 @@ public class AccountRecoveryService {
             throw invalid();
         }
         u.setPassword(passwordEncoder.encode(newPassword));
+        u.setMustChangePassword(false);
         revocation.invalidate(u.getEmail());
         throttle.reset("login:" + u.getEmail().toLowerCase(Locale.ROOT));
         mail.enqueueDirect(u.getEmail(), name(u), "[EduNex] Votre mot de passe a été modifié",

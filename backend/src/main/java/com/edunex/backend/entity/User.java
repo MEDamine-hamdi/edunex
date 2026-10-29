@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +35,9 @@ public class User {
 
     @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
     private boolean mustChangePassword = false;
+
+    @Column(name = "temp_password_expires_at")
+    private Instant temporaryPasswordExpiresAt;
 
     @Column(length = 30)
     private String phone;

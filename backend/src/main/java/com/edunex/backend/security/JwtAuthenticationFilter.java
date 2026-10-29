@@ -20,12 +20,14 @@ import java.util.Set;
  * Reads the token from "Authorization: Bearer" (mobile apps, scripts) or from the session cookie (web).
  * A request authenticated by the cookie that changes data must carry "X-Requested-With": a page of another
  * site cannot add that header, which closes cross-site request forgery.
+ * An account that still has its temporary password can only read its own identity, set a new password or sign out.
  */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS", "TRACE");
+    private static final String MUST_CHANGE = "PASSWORD_CHANGE_REQUIRED";
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -68,6 +70,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    boolean mustChange = userDetails.getAuthorities().stream()
+                            .anyMatch(a -> MUST_CHANGE.equals(a.getAuthority()));
+                    String path = request.getRequestURI();
+                    if (mustChange && !path.startsWith("/api/auth/")
+                            && !path.equals("/api/users/me")
+                            && !path.equals("/api/profile/first-password")) {
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\":\"PASSWORD_CHANGE_REQUIRED\"}");
+                        return;
+                    }
                 }
             } catch (UsernameNotFoundException ignored) {
                 // unknown user (for example after an e-mail change): the request stays unauthenticated

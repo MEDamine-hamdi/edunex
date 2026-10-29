@@ -39,6 +39,13 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/first-password")
+    public ResponseEntity<Void> firstPassword(@Valid @RequestBody ChangePasswordRequest request,
+                                              Authentication auth) {
+        profileService.firstPassword(auth.getName(), request);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ProfileResponse uploadPhoto(@RequestParam("file") MultipartFile file, Authentication auth) {
         return profileService.uploadPhoto(auth.getName(), file);

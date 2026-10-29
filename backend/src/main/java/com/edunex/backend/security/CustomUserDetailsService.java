@@ -34,6 +34,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .forEach(p -> authorities.add(new SimpleGrantedAuthority(p.getCode())));
         }
 
+        if (user.isMustChangePassword()) {
+            authorities.add(new SimpleGrantedAuthority("PASSWORD_CHANGE_REQUIRED"));
+        }
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())

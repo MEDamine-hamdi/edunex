@@ -29,7 +29,7 @@ function photoError(e: ApiError) {
 function passwordError(e: ApiError) {
   if (e.message.includes("incorrect")) return "Mot de passe actuel incorrect.";
   if (e.message.includes("different")) return "Le nouveau mot de passe doit être différent de l'actuel.";
-  if (e.message.includes("newPassword")) return "Le nouveau mot de passe doit contenir 8 caractères minimum.";
+  if (e.message.includes("newPassword")) return "Le nouveau mot de passe doit contenir 10 à 72 caractères, avec des lettres et des chiffres.";
   return e.message;
 }
 
@@ -228,7 +228,7 @@ export function ProfileEditor() {
             {pwInfo && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{pwInfo}</p>}
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <TextField label="Mot de passe actuel" type="password" autoComplete="current-password" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required />
-              <TextField label="Nouveau (8 car. min.)" type="password" autoComplete="new-password" minLength={8} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required />
+              <TextField label="Nouveau (10 car. min.)" type="password" autoComplete="new-password" minLength={10} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required />
               <TextField label="Confirmation" type="password" autoComplete="new-password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} required />
             </div>
             <button type="submit" disabled={pwSaving} className={`mt-6 ${primaryBtn}`}>

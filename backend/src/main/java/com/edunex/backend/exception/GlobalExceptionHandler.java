@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", "Invalid email or password"));
     }
 
+    @ExceptionHandler(TemporaryPasswordExpiredException.class)
+    public ResponseEntity<Map<String, String>> handleTempExpired(TemporaryPasswordExpiredException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "TEMPORARY_PASSWORD_EXPIRED"));
+    }
+
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<Map<String, String>> handleDisabled(DisabledException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
