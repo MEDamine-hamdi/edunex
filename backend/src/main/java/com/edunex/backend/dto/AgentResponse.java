@@ -8,6 +8,7 @@ public record AgentResponse(
         String phone,
         String employeeNumber,
         String service,
-        String status
+        String status,
+        String cin
 ) {
 }

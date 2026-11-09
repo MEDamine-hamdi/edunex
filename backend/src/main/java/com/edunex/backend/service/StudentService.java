@@ -44,6 +44,7 @@ public class StudentService {
         s.setSpecialty(req.specialty());
         s.setRole(roleRepository.findByName("ROLE_STUDENT")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_STUDENT not found")));
+        s.setCin(req.cin());
         credentials.issue(s);
 
         return toResponse(studentRepository.save(s));
@@ -65,6 +66,6 @@ public class StudentService {
     private StudentResponse toResponse(Student s) {
         return new StudentResponse(s.getId(), s.getFirstName(), s.getLastName(), s.getEmail(),
                 s.getPhone(), s.getStudentNumber(), s.getEnrollmentYear(), s.getLevel(),
-                s.getSpecialty(), s.getStatus().name());
+                s.getSpecialty(), s.getStatus().name(), s.getCin());
     }
 }

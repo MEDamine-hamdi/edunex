@@ -42,6 +42,10 @@ public class User {
     @Column(length = 30)
     private String phone;
 
+    /** National identity card number: exactly 8 digits. Empty for accounts created before this field existed. */
+    @Column(name = "cin", length = 8, unique = true)
+    private String cin;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;

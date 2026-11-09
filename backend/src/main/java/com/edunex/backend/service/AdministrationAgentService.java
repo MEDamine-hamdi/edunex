@@ -42,6 +42,7 @@ public class AdministrationAgentService {
         agent.setService(req.service());
         agent.setRole(roleRepository.findByName("ROLE_ADMIN_AGENT")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_ADMIN_AGENT not found")));
+        agent.setCin(req.cin());
         credentials.issue(agent);
 
         return toResponse(agentRepository.save(agent));
@@ -62,6 +63,6 @@ public class AdministrationAgentService {
 
     private AgentResponse toResponse(AdministrationAgent a) {
         return new AgentResponse(a.getId(), a.getFirstName(), a.getLastName(), a.getEmail(),
-                a.getPhone(), a.getEmployeeNumber(), a.getService(), a.getStatus().name());
+                a.getPhone(), a.getEmployeeNumber(), a.getService(), a.getStatus().name(), a.getCin());
     }
 }

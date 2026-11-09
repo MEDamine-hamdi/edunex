@@ -79,7 +79,7 @@ public class SubjectService {
     private SubjectResponse toResponse(Subject s) {
         List<SubjectResponse.PersonRef> professors = s.getProfessors().stream()
                 .sorted(Comparator.comparing(Professor::getLastName))
-                .map(p -> new SubjectResponse.PersonRef(p.getId(), p.getFirstName(), p.getLastName()))
+                .map(p -> new SubjectResponse.PersonRef(p.getId(), p.getFirstName(), p.getLastName(), p.getEmail()))
                 .toList();
         return new SubjectResponse(s.getId(), s.getName(), s.getCode(),
                 s.getCoefficient(), s.getCredits(), professors);

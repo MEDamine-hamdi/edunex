@@ -2,6 +2,7 @@
 
 import { PlatformShell } from "@/components/PlatformShell";
 import { AccountsManager, Status } from "@/components/AccountsManager";
+import { CinCell } from "@/components/CinCell";
 
 type Agent = {
   id: number;
@@ -11,6 +12,7 @@ type Agent = {
   phone: string | null;
   employeeNumber: string;
   service: string | null;
+  cin: string | null;
   status: Status;
 };
 
@@ -26,6 +28,7 @@ export default function AgentsPage() {
           { key: "firstName", label: "Prénom", required: true },
           { key: "lastName", label: "Nom", required: true },
           { key: "email", label: "Email", type: "email", required: true },
+          { key: "cin", label: "CIN (8 chiffres)", required: true },
           { key: "phone", label: "Téléphone" },
           { key: "employeeNumber", label: "Numéro d'employé", required: true },
           { key: "service", label: "Service" },
@@ -33,6 +36,7 @@ export default function AgentsPage() {
         columns={[
           { label: "Nom", render: (a) => <span className="font-medium text-slate-900">{a.firstName} {a.lastName}</span> },
           { label: "Email", render: (a) => a.email },
+          { label: "CIN", render: (a) => <CinCell userId={a.id} value={a.cin} /> },
           { label: "N° employé", render: (a) => a.employeeNumber },
           { label: "Service", render: (a) => a.service ?? "-" },
         ]}

@@ -9,6 +9,8 @@ public record ProfessorResponse(
         String employeeNumber,
         String department,
         String specialty,
-        String status
+        String status,
+        String cin,
+        String professorType
 ) {
 }

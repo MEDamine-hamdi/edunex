@@ -6,5 +6,6 @@ public enum NotificationType {
     NEW_GRADE,
     ATTENDANCE_UPDATE,
     ANNOUNCEMENT,
-    DOCUMENT_REQUEST
+    DOCUMENT_REQUEST,
+    INTERNSHIP
 }

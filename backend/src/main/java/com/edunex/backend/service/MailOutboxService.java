@@ -134,6 +134,7 @@ public class MailOutboxService {
             case ATTENDANCE_UPDATE -> "Présence";
             case ANNOUNCEMENT -> "Nouvelle annonce";
             case DOCUMENT_REQUEST -> "Demande de document";
+            case INTERNSHIP -> "Stage et soutenance";
         };
     }
 
@@ -146,11 +147,13 @@ public class MailOutboxService {
                 case NEW_GRADE -> "/student/grades";
                 case ATTENDANCE_UPDATE -> "/student/attendance";
                 case DOCUMENT_REQUEST -> "/student/requests";
+                case INTERNSHIP -> "/student/internship";
                 default -> "/student/notifications";
             };
             case "ROLE_PROFESSOR" -> switch (type) {
                 case TIMETABLE_CHANGE -> "/professor/timetable";
                 case DOCUMENT_REQUEST -> "/professor/requests";
+                case INTERNSHIP -> "/professor/internships";
                 default -> "/professor/notifications";
             };
             case "ROLE_ADMIN_AGENT" -> type == NotificationType.DOCUMENT_REQUEST ? "/admin/requests" : "/admin/notifications";

@@ -2,6 +2,7 @@
 
 import { AdminShell } from "@/components/AdminShell";
 import { AccountsManager, Status } from "@/components/AccountsManager";
+import { CinCell } from "@/components/CinCell";
 
 type Student = {
   id: number;
@@ -11,6 +12,7 @@ type Student = {
   studentNumber: string;
   level: string | null;
   specialty: string | null;
+  cin: string | null;
   status: Status;
 };
 
@@ -26,6 +28,7 @@ export default function StudentsPage() {
           { key: "firstName", label: "Prénom", required: true },
           { key: "lastName", label: "Nom", required: true },
           { key: "email", label: "Email", type: "email", required: true },
+          { key: "cin", label: "CIN (8 chiffres)", required: true },
           { key: "phone", label: "Téléphone" },
           { key: "studentNumber", label: "Numéro étudiant", required: true },
           { key: "enrollmentYear", label: "Année d'inscription", type: "number" },
@@ -35,6 +38,7 @@ export default function StudentsPage() {
         columns={[
           { label: "Nom", render: (s) => <span className="font-medium text-slate-900">{s.firstName} {s.lastName}</span> },
           { label: "Email", render: (s) => s.email },
+          { label: "CIN", render: (s) => <CinCell userId={s.id} value={s.cin} /> },
           { label: "N° étudiant", render: (s) => s.studentNumber },
           { label: "Niveau", render: (s) => s.level ?? "-" },
           { label: "Spécialité", render: (s) => s.specialty ?? "-" },

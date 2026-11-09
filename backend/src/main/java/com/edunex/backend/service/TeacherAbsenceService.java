@@ -79,6 +79,55 @@ public class TeacherAbsenceService {
         return week(list, any, false);
     }
 
+    // ---------- any period (day, week, month) ----------
+
+    @Transactional(readOnly = true)
+    public List<WeekSession> studentRange(String email, LocalDate from, LocalDate to) {
+        Student s = user(email, Student.class);
+        Set<Long> classIds = enrollmentRepository.findByStudentIdAndStatus(s.getId(), EnrollmentStatus.ACTIVE).stream()
+                .map(e -> e.getSchoolClass().getId()).collect(Collectors.toSet());
+        return classIds.isEmpty() ? List.of() : expand(sessionRepository.findBySchoolClassIdIn(classIds), from, to, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeekSession> professorRange(String email, LocalDate from, LocalDate to) {
+        Professor p = user(email, Professor.class);
+        return expand(sessionRepository.findByProfessorId(p.getId()), from, to, true);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeekSession> adminRange(LocalDate from, LocalDate to, Long classId, Long professorId) {
+        List<TimetableSession> list = sessionRepository.findAll().stream()
+                .filter(s -> classId == null || s.getSchoolClass().getId().equals(classId))
+                .filter(s -> professorId == null || s.getProfessor().getId().equals(professorId))
+                .toList();
+        return expand(list, from, to, false);
+    }
+
+    private List<WeekSession> expand(List<TimetableSession> sessions, LocalDate from, LocalDate to, boolean professorView) {
+        if (to.isBefore(from) || java.time.temporal.ChronoUnit.DAYS.between(from, to) > 62) {
+            throw new BadRequestException("The period is limited to 62 days");
+        }
+        Map<String, SessionAbsence> absences = new HashMap<>();
+        if (!sessions.isEmpty()) {
+            absenceRepository.findBySessionIdInAndDateBetween(
+                            sessions.stream().map(TimetableSession::getId).toList(), from, to)
+                    .forEach(a -> absences.put(a.getSessionId() + "|" + a.getDate(), a));
+        }
+        LocalDateTime now = LocalDateTime.now();
+        List<WeekSession> out = new java.util.ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            for (TimetableSession s : sessions) {
+                if (s.getDayOfWeek() == d.getDayOfWeek()) {
+                    SessionAbsence a = absences.get(s.getId() + "|" + d);
+                    out.add(toWeek(s, d, a, professorView && a == null && leadTimeOk(d, s, now)));
+                }
+            }
+        }
+        out.sort(Comparator.comparing(WeekSession::date).thenComparing(WeekSession::startTime));
+        return out;
+    }
+
     // ---------- declare / mark / cancel ----------
 
     @Transactional

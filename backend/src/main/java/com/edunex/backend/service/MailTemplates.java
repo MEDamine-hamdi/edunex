@@ -39,6 +39,15 @@ final class MailTemplates {
                 esc(footer));
     }
 
+    static String credentials(String firstName, String email, String temporaryPassword, String loginUrl, int days) {
+        return action(firstName, "Vos identifiants de connexion",
+                "Un compte EduNex a été créé pour vous. Adresse de connexion : " + email
+                        + " — mot de passe provisoire : " + temporaryPassword
+                        + ". Il est valable " + days + " jours et vous devrez le remplacer lors de votre première connexion.",
+                "Se connecter", loginUrl,
+                "Ne communiquez ce mot de passe à personne. Si vous n'attendiez pas ce message, contactez l'administration.");
+    }
+
     private static String esc(String s) {
         return HtmlUtils.htmlEscape(s == null ? "" : s);
     }

@@ -43,6 +43,8 @@ public class ProfessorService {
         p.setSpecialty(req.specialty());
         p.setRole(roleRepository.findByName("ROLE_PROFESSOR")
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_PROFESSOR not found")));
+        p.setCin(req.cin());
+        p.setProfessorType(ProfessorTypes.normalize(req.professorType()));
         credentials.issue(p);
 
         return toResponse(professorRepository.save(p));
@@ -64,6 +66,6 @@ public class ProfessorService {
     private ProfessorResponse toResponse(Professor p) {
         return new ProfessorResponse(p.getId(), p.getFirstName(), p.getLastName(), p.getEmail(),
                 p.getPhone(), p.getEmployeeNumber(), p.getDepartment(), p.getSpecialty(),
-                p.getStatus().name());
+                p.getStatus().name(), p.getCin(), p.getProfessorType());
     }
 }

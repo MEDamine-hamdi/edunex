@@ -15,6 +15,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmailIgnoreCase(String email);
 
+    boolean existsByCin(String cin);
+
+    Optional<User> findByCin(String cin);
+
     boolean existsByEmail(String email);
 
     long countByRoleId(Long roleId);

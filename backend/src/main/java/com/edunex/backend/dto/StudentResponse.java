@@ -10,6 +10,7 @@ public record StudentResponse(
         Integer enrollmentYear,
         String level,
         String specialty,
-        String status
+        String status,
+        String cin
 ) {
 }

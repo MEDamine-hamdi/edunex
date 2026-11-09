@@ -21,4 +21,8 @@ public class Professor extends User {
 
     @Column(length = 100)
     private String specialty;
+
+    /** PERMANENT or VACATAIRE. */
+    @Column(name = "professor_type", length = 20)
+    private String professorType;
 }

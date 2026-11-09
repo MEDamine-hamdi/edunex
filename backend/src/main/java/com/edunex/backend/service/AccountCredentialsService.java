@@ -1,68 +1,69 @@
 package com.edunex.backend.service;
 
 import com.edunex.backend.entity.User;
+import com.edunex.backend.exception.ConflictException;
 import com.edunex.backend.exception.MailUnavailableException;
+import com.edunex.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 
-/** Generates a temporary password for a new account and e-mails it through the outbox. */
-@Component
+/** New accounts: a random temporary password is generated, e-mailed to the person, and must be changed at the first login. */
+@Service
 @RequiredArgsConstructor
 public class AccountCredentialsService {
 
     private static final String LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
     private static final String DIGITS = "23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final Duration VALIDITY = Duration.ofHours(72);
 
     private final PasswordEncoder passwordEncoder;
     private final MailOutboxService mail;
+    private final UserRepository userRepository;
 
     @Value("${app.public-url:http://localhost:3000}")
     private String publicUrl;
 
-    /** Call before saving the user, inside the same transaction. */
+    @Value("${app.accounts.temporary-password-days:7}")
+    private int days;
+
+    @Transactional
     public void issue(User user) {
         if (!mail.isConfigured()) {
-            // rolls the creation back: otherwise nobody would know the password
-            throw new MailUnavailableException("E-mail is not configured: credentials cannot be sent");
+            throw new MailUnavailableException("E-mail service is not configured: the credentials cannot be sent");
         }
-        String temp = generate();
-        user.setPassword(passwordEncoder.encode(temp));
+        if (user.getCin() != null && userRepository.existsByCin(user.getCin())) {
+            throw new ConflictException("This CIN is already used by another account");
+        }
+        String temporary = generate();
+        user.setPassword(passwordEncoder.encode(temporary));
         user.setMustChangePassword(true);
-        user.setTemporaryPasswordExpiresAt(Instant.now().plus(VALIDITY));
+        user.setTemporaryPasswordExpiresAt(Instant.now().plus(days, ChronoUnit.DAYS));
 
         String base = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
-        String intro = "Votre compte EduNex a \u00e9t\u00e9 cr\u00e9\u00e9. Identifiant : " + user.getEmail()
-                + " - Mot de passe provisoire : " + temp
-                + ". Il est valable 72 heures et vous devrez le changer \u00e0 votre premi\u00e8re connexion.";
         mail.enqueueDirect(user.getEmail(), user.getFirstName() + " " + user.getLastName(),
                 "[EduNex] Vos identifiants de connexion",
-                MailTemplates.action(user.getFirstName(), "Bienvenue sur EduNex", intro,
-                        "Se connecter", base + "/login",
-                        "Si vous n'\u00eates pas concern\u00e9 par ce message, ignorez-le."));
+                MailTemplates.credentials(user.getFirstName(), user.getEmail(), temporary, base + "/login", days));
     }
 
-    private static String generate() {
-        String all = LETTERS + DIGITS;
-        List<Character> chars = new ArrayList<>();
-        chars.add(LETTERS.charAt(RANDOM.nextInt(LETTERS.length())));
-        chars.add(DIGITS.charAt(RANDOM.nextInt(DIGITS.length())));
-        for (int i = 0; i < 10; i++) {
-            chars.add(all.charAt(RANDOM.nextInt(all.length())));
+    /** 14 characters: 4 digits and 10 letters in random order, without look-alike characters. */
+    static String generate() {
+        char[] chars = new char[14];
+        for (int i = 0; i < 14; i++) {
+            chars[i] = i < 4 ? DIGITS.charAt(RANDOM.nextInt(DIGITS.length())) : LETTERS.charAt(RANDOM.nextInt(LETTERS.length()));
         }
-        Collections.shuffle(chars, RANDOM);
-        StringBuilder sb = new StringBuilder();
-        chars.forEach(sb::append);
-        return sb.toString();
+        for (int i = chars.length - 1; i > 0; i--) {
+            int j = RANDOM.nextInt(i + 1);
+            char tmp = chars[i];
+            chars[i] = chars[j];
+            chars[j] = tmp;
+        }
+        return new String(chars);
     }
 }

@@ -10,6 +10,6 @@ public record SubjectResponse(
         Integer credits,
         List<PersonRef> professors
 ) {
-    public record PersonRef(Long id, String firstName, String lastName) {
+    public record PersonRef(Long id, String firstName, String lastName, String email) {
     }
 }

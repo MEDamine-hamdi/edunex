@@ -3,7 +3,6 @@ package com.edunex.backend.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 public record CreateStudentRequest(
         @NotBlank String firstName,
@@ -13,6 +12,7 @@ public record CreateStudentRequest(
         @NotBlank String studentNumber,
         Integer enrollmentYear,
         String level,
-        String specialty
+        String specialty,
+        @NotBlank @Pattern(regexp = "^\\d{8}$", message = "must be 8 digits") String cin
 ) {
 }

@@ -29,6 +29,7 @@ const TYPES: Record<string, string> = {
   ATTENDANCE_UPDATE: "Présence",
   ANNOUNCEMENT: "Annonce",
   DOCUMENT_REQUEST: "Demande",
+  INTERNSHIP: "Stage",
 };
 
 const PAGES: Record<string, Record<string, [string, string]>> = {
@@ -38,10 +39,12 @@ const PAGES: Record<string, Record<string, [string, string]>> = {
     NEW_GRADE: ["/student/grades", "Voir mes notes"],
     ATTENDANCE_UPDATE: ["/student/attendance", "Voir mes absences"],
     DOCUMENT_REQUEST: ["/student/requests", "Voir mes demandes"],
+    INTERNSHIP: ["/student/internship", "Voir mon stage"],
   },
   ROLE_PROFESSOR: {
     TIMETABLE_CHANGE: ["/professor/timetable", "Voir mon emploi du temps"],
     DOCUMENT_REQUEST: ["/professor/requests", "Voir mes demandes"],
+    INTERNSHIP: ["/professor/internships", "Voir les soutenances"],
   },
   ROLE_ADMIN_AGENT: {
     DOCUMENT_REQUEST: ["/admin/requests", "Traiter les demandes"],
