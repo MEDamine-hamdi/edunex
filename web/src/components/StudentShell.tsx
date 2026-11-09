@@ -13,6 +13,7 @@ const nav: NavItem[] = [
   { href: "/student/assistant", label: "Assistant EduNex AI" },
   { href: "/student/requests", label: "Demandes de documents" },
   { href: "/student/internship", label: "Mon stage" },
+  { href: "/student/messages", label: "Messagerie" },
   { href: "/student/notifications", label: "Notifications" },
   { href: "/student/profile", label: "Mon profil" },
 ];

@@ -12,6 +12,7 @@ const nav: NavItem[] = [
   { href: "/professor/timetable", label: "Emploi du temps" },
   { href: "/professor/requests", label: "Demandes de documents" },
   { href: "/professor/internships", label: "Stages et soutenances" },
+  { href: "/professor/messages", label: "Messagerie" },
   { href: "/professor/notifications", label: "Notifications" },
   { href: "/professor/profile", label: "Mon profil" },
 ];

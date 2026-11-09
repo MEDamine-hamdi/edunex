@@ -9,6 +9,7 @@ import { logout as endSession } from "@/lib/auth";
 import { homeFor, notificationsFor, profileFor } from "@/lib/roles";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
+import { MessagesLink } from "./MessagesLink";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
@@ -102,6 +103,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
           <div className="flex items-center gap-3 text-sm">
             <LanguageSwitcher />
             <ThemeSwitcher />
+            <MessagesLink />
             <NotificationBell href={notificationsFor(me.role)} />
             <Link href={profileFor(me.role)} className="hidden text-slate-600 hover:text-blue-700 sm:inline">
               {me.firstName} {me.lastName}
