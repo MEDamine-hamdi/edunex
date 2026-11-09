@@ -19,6 +19,7 @@ public final class PermissionCatalog {
             new Entry("REQUESTS_MANAGE", "Traiter les demandes de documents", List.of("ROLE_ADMIN_AGENT")),
             new Entry("INTERNSHIPS_MANAGE", "Gérer les stages et les soutenances", List.of("ROLE_ADMIN_AGENT")),
             new Entry("ELIMINATION_MANAGE", "Gérer les seuils d'absences et les éliminations", List.of("ROLE_ADMIN_AGENT")),
+            new Entry("EXAMS_MANAGE", "Gérer les examens et la surveillance", List.of("ROLE_ADMIN_AGENT")),
             new Entry("ATTENDANCE_MARK", "Faire l'appel et consulter les présences de ses matières", List.of("ROLE_PROFESSOR")),
             new Entry("AI_ASSISTANT_USE", "Utiliser l'assistant IA EduNex", List.of("ROLE_STUDENT"))
     );

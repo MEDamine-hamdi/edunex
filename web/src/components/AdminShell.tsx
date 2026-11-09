@@ -13,6 +13,7 @@ const nav: NavItem[] = [
   { href: "/admin/timetables", label: "Emplois du temps" },
   { href: "/admin/grades", label: "Notes" },
   { href: "/admin/announcements", label: "Annonces" },
+  { href: "/admin/exams", label: "Examens et surveillance" },
   { href: "/admin/elimination", label: "Éliminations" },
   { href: "/admin/messages", label: "Messagerie" },
   { href: "/admin/knowledge", label: "Base de connaissances" },

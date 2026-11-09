@@ -15,6 +15,7 @@ const nav: NavItem[] = [
   { href: "/student/requests", label: "Demandes de documents" },
   { href: "/student/internship", label: "Mon stage" },
   { href: "/student/messages", label: "Messagerie" },
+  { href: "/student/exams", label: "Mes examens" },
   { href: "/student/notifications", label: "Notifications" },
   { href: "/student/profile", label: "Mon profil" },
 ];
