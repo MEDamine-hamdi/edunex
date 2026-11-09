@@ -11,6 +11,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Logo } from "./Logo";
 import { MessagesLink } from "./MessagesLink";
 import { NotificationBell } from "./NotificationBell";
+import { EliminationBanner } from "./EliminationBanner";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export type Me = {
@@ -159,6 +160,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
           </nav>
 
           <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-6">
+            {me.role === "ROLE_STUDENT" && <EliminationBanner />}
             {children}
           </main>
         </div>
