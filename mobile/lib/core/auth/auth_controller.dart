@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +11,9 @@ class SessionUser {
   final String firstName;
   final String lastName;
   final String role; // ROLE_STUDENT | ROLE_PROFESSOR | ROLE_ADMIN_AGENT | ROLE_PLATFORM_ADMIN
-  SessionUser(this.id, this.email, this.firstName, this.lastName, this.role);
+  /// True while the account still has its e-mailed temporary password.
+  bool mustChangePassword;
+  SessionUser(this.id, this.email, this.firstName, this.lastName, this.role, {this.mustChangePassword = false});
 
   String get fullName => '$firstName $lastName'.trim();
   String get initials =>
@@ -23,6 +25,7 @@ class SessionUser {
         (j['firstName'] ?? '').toString(),
         (j['lastName'] ?? '').toString(),
         (j['role'] ?? '').toString(),
+        mustChangePassword: j['mustChangePassword'] == true,
       );
 }
 
@@ -32,6 +35,12 @@ class AuthController extends ChangeNotifier {
   final ApiClient api;
   AuthController(this.api) {
     api.onUnauthorized = _expired;
+    api.onPasswordChangeRequired = () {
+      if (user != null && !user!.mustChangePassword) {
+        user!.mustChangePassword = true;
+        notifyListeners();
+      }
+    };
   }
 
   static const _storage = FlutterSecureStorage(
@@ -87,7 +96,7 @@ class AuthController extends ChangeNotifier {
     ) as Map<String, dynamic>;
     final token = res['token'] as String?;
     if (token == null || token.isEmpty) {
-      throw ApiException(0, 'Le serveur n\'a pas renvoyÃ© de jeton (X-Client: mobile non pris en charge ?).');
+      throw ApiException(0, 'Le serveur n\'a pas renvoyé de jeton (X-Client: mobile non pris en charge ?).');
     }
     api.token = token;
     if (remember) {
@@ -114,9 +123,14 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void passwordChanged() {
+    user?.mustChangePassword = false;
+    notifyListeners();
+  }
+
   void _expired() {
     if (user == null) return;
-    forceSignOut('Votre session a expirÃ©. Veuillez vous reconnecter.');
+    forceSignOut('Votre session a expiré. Veuillez vous reconnecter.');
   }
 
   Future<void> _clear() async {
@@ -128,7 +142,7 @@ class AuthController extends ChangeNotifier {
   void updateName(String first, String last) {
     final u = user;
     if (u == null) return;
-    user = SessionUser(u.id, u.email, first, last, u.role);
+    user = SessionUser(u.id, u.email, first, last, u.role, mustChangePassword: u.mustChangePassword);
     notifyListeners();
   }
 }

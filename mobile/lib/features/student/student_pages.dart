@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
 import '../../core/theme/app_theme.dart';
@@ -28,11 +28,11 @@ Widget sessionTile(BuildContext context, SessionItem s, {bool showProfessor = tr
       ),
       title: Text(s.subjectName ?? ''),
       subtitle: Text([
-        '${hhmm(s.startTime)}â€“${hhmm(s.endTime)}',
+        '${hhmm(s.startTime)}–${hhmm(s.endTime)}',
         if ((s.room ?? '').isNotEmpty) 'Salle ${s.room}',
         if ((s.className ?? '').isNotEmpty) s.className!,
         if (showProfessor && (s.professorName ?? '').isNotEmpty) s.professorName!,
-      ].join(' Â· ')),
+      ].join(' · ')),
     );
 
 class DocumentTile extends StatelessWidget {
@@ -45,7 +45,7 @@ class DocumentTile extends StatelessWidget {
         dense: true,
         leading: Icon(docIcon(d.type), color: EduColors.primary),
         title: Text(d.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${fmtSize(d.size)} Â· ${fmtDate(d.uploadedAt)}'),
+        subtitle: Text('${fmtSize(d.size)} · ${fmtDate(d.uploadedAt)}'),
         trailing: trailing ?? const Icon(Icons.download_outlined),
         onTap: () => openProtectedFile(context, '/api/documents/${d.id}/download', name: d.title),
       );
@@ -65,28 +65,28 @@ class StudentDashboardPage extends StatelessWidget {
         final avg = asDouble(d['overallAverage']);
         return PageList([
           StatGrid([
-            StatCard(label: 'MatiÃ¨res', value: '${asInt(d['subjects']) ?? 0}', icon: Icons.category_outlined),
-            StatCard(label: 'Moyenne gÃ©nÃ©rale', value: avg == null ? 'â€”' : avg.toStringAsFixed(2), icon: Icons.grade_outlined, color: EduColors.emerald),
+            StatCard(label: 'Matières', value: '${asInt(d['subjects']) ?? 0}', icon: Icons.category_outlined),
+            StatCard(label: 'Moyenne générale', value: avg == null ? '—' : avg.toStringAsFixed(2), icon: Icons.grade_outlined, color: EduColors.emerald),
             StatCard(label: 'Absences', value: '${asInt(d['absences']) ?? 0}', icon: Icons.event_busy_outlined, color: EduColors.red),
             StatCard(label: 'Retards', value: '${asInt(d['lates']) ?? 0}', icon: Icons.schedule, color: EduColors.orange),
           ]),
           Panel(
-            title: 'Prochaines sÃ©ances',
+            title: 'Prochaines séances',
             child: sessions.isEmpty
-                ? const EmptyState('Aucune sÃ©ance Ã  venir')
+                ? const EmptyState('Aucune séance à venir')
                 : Column(children: [for (final s in sessions) Padding(padding: const EdgeInsets.only(bottom: 8), child: sessionTile(context, s))]),
           ),
           Panel(
             title: 'Derniers cours',
             child: courses.isEmpty
-                ? const EmptyState('Aucun cours publiÃ©')
+                ? const EmptyState('Aucun cours publié')
                 : Column(children: [
                     for (final c in courses)
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.menu_book_outlined, color: EduColors.primary),
                         title: Text(str(c['title']) ?? '', style: const TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text('${str(c['subjectName']) ?? ''} Â· ${fmtDate(asDate(c['createdAt']))}'),
+                        subtitle: Text('${str(c['subjectName']) ?? ''} · ${fmtDate(asDate(c['createdAt']))}'),
                       ),
                   ]),
           ),
@@ -102,16 +102,28 @@ class StudentSubjectsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final api = apiOf(context);
-    return AsyncBody<List<SubjectRef>>(
-      load: () async => listOf(await api.get('/api/student/subjects'), SubjectRef.fromJson),
+    return AsyncBody<List<JMap>>(
+      load: () async => maps(await api.get('/api/student/subjects/details')),
       builder: (context, items, reload) {
-        if (items.isEmpty) return ListView(children: const [EmptyState('Aucune matiÃ¨re')]);
+        if (items.isEmpty) return ListView(children: const [EmptyState('Aucune matière')]);
         return PageList([
           for (final s in items)
-            ListTileCard(
-              leading: Avatar((s.code ?? s.name).substring(0, 1).toUpperCase()),
-              title: Text(s.name),
-              subtitle: Text(s.code ?? ''),
+            Panel(
+              title: str(s['name']) ?? '',
+              trailing: Badge2(str(s['code']) ?? '', color: EduColors.primary),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Coefficient ${s['coefficient'] ?? '—'} · ${s['credits'] ?? '—'} crédits', style: TextStyle(color: Theme.of(context).hintColor)),
+                const SizedBox(height: 8),
+                if (maps(s['professors']).isEmpty) const Text('Aucun professeur'),
+                for (final p in maps(s['professors']))
+                  ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.school_outlined, color: EduColors.emerald),
+                    title: Text(str(p['name']) ?? ''),
+                    subtitle: Text(str(p['email']) ?? ''),
+                  ),
+              ]),
             ),
         ]);
       },
@@ -145,7 +157,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
           TextField(
             controller: search,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(hintText: 'Rechercher un cours', prefixIcon: Icon(Icons.search)),
+            decoration: InputDecoration(hintText: tr('Rechercher un cours'), prefixIcon: Icon(Icons.search)),
           ),
           if (subjects.isNotEmpty)
             SizedBox(
@@ -182,7 +194,7 @@ class CourseCard extends StatelessWidget {
       trailing: c.subjectName == null ? null : Badge2(c.subjectName!, color: EduColors.primary),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if ((c.description ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(c.description!)),
-        Text('${c.professorName ?? ''} Â· ${fmtDate(c.createdAt)}',
+        Text('${c.professorName ?? ''} · ${fmtDate(c.createdAt)}',
             style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
         const SizedBox(height: 8),
         if (c.documents.isEmpty)
@@ -208,12 +220,12 @@ class StudentAttendancePage extends StatelessWidget {
       ),
       builder: (context, d, reload) {
         final (stats, records) = d;
-        const label = {'PRESENT': 'PrÃ©sent', 'ABSENT': 'Absent', 'LATE': 'En retard'};
+        const label = {'PRESENT': 'Présent', 'ABSENT': 'Absent', 'LATE': 'En retard'};
         return PageList([
           Panel(
-            title: 'Par matiÃ¨re',
+            title: 'Par matière',
             child: stats.isEmpty
-                ? const EmptyState('Aucune donnÃ©e')
+                ? const EmptyState('Aucune donnée')
                 : Column(children: [
                     for (final s in stats)
                       Padding(
@@ -225,7 +237,7 @@ class StudentAttendancePage extends StatelessWidget {
                                 color: (asDouble(s['absenceRate']) ?? 0) > 20 ? EduColors.red : EduColors.emerald),
                           ]),
                           const SizedBox(height: 4),
-                          Text('PrÃ©sences ${asInt(s['present'])} Â· Absences ${asInt(s['absent'])} Â· Retards ${asInt(s['late'])} Â· Total ${asInt(s['total'])}',
+                          Text('Présences ${asInt(s['present'])} · Absences ${asInt(s['absent'])} · Retards ${asInt(s['late'])} · Total ${asInt(s['total'])}',
                               style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor)),
                         ]),
                       ),
@@ -241,7 +253,7 @@ class StudentAttendancePage extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         dense: true,
                         title: Text(r.subjectName ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: Text('${fmtDate(r.date)}${(r.justification ?? '').isNotEmpty ? ' Â· ${r.justification}' : ''}'),
+                        subtitle: Text('${fmtDate(r.date)}${(r.justification ?? '').isNotEmpty ? ' · ${r.justification}' : ''}'),
                         trailing: Badge2(label[r.status] ?? r.status ?? '', color: statusColor(r.status ?? '')),
                       ),
                   ]),
@@ -285,8 +297,8 @@ class _StudentGradesPageState extends State<StudentGradesPage> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Moyenne gÃ©nÃ©rale', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
-                    Text(avg == null ? 'â€”' : '${avg.toStringAsFixed(2)} / 20',
+                    const Text('Moyenne générale', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+                    Text(avg == null ? '—' : '${avg.toStringAsFixed(2)} / 20',
                         style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
                   ]),
                 ),
@@ -294,14 +306,14 @@ class _StudentGradesPageState extends State<StudentGradesPage> {
             ),
           ),
           Panel(
-            title: 'Moyennes par matiÃ¨re',
+            title: 'Moyennes par matière',
             child: BarList([
               for (final s in subjects)
                 if (asDouble(s['average']) != null) (str(s['subjectName']) ?? '', asDouble(s['average'])!)
             ], max: 20, fmt: (v) => v.toStringAsFixed(2)),
           ),
           Panel(
-            title: 'DÃ©tail des notes',
+            title: 'Détail des notes',
             child: grades.isEmpty
                 ? const EmptyState('Aucune note')
                 : Column(children: [
@@ -310,7 +322,7 @@ class _StudentGradesPageState extends State<StudentGradesPage> {
                         contentPadding: EdgeInsets.zero,
                         dense: true,
                         title: Text(g.subjectName ?? '', style: const TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: Text('${gradeTypeFr[g.evaluationType] ?? g.evaluationType ?? ''} Â· ${fmtDate(g.date)}'),
+                        subtitle: Text('${gradeTypeFr[g.evaluationType] ?? g.evaluationType ?? ''} · ${fmtDate(g.date)}'),
                         trailing: Text(num1(g.value),
                             style: TextStyle(
                                 fontWeight: FontWeight.w900,

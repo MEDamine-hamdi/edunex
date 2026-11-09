@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// Palette lifted from the EduNex web app (Tailwind: blue-600, indigo-600, slate neutrals, violet logo gradient).
 class EduColors {

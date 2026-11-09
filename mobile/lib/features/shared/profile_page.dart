@@ -1,7 +1,7 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../../core/api/api_client.dart';
@@ -81,14 +81,14 @@ class _ProfilePageState extends State<ProfilePage> {
             title: 'Informations',
             trailing: TextButton(onPressed: () => _edit(context, api, p), child: const Text('Modifier')),
             child: Column(children: [
-              _row('TÃ©lÃ©phone', str(p['phone'])),
+              _row('Téléphone', str(p['phone'])),
               _row('Adresse', str(p['address'])),
               _row('Date de naissance', p['dateOfBirth'] == null ? null : fmtDate(asDate(p['dateOfBirth']))),
               for (final (label, value) in details) _row(label, value),
             ]),
           ),
           Panel(
-            title: 'SÃ©curitÃ©',
+            title: 'Sécurité',
             child: Column(children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -101,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.alternate_email),
                 title: const Text('Changer l\'adresse e-mail'),
-                subtitle: const Text('Un lien de confirmation est envoyÃ© Ã  la nouvelle adresse'),
+                subtitle: const Text('Un lien de confirmation est envoyé à la nouvelle adresse'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _email(context, api),
               ),
@@ -130,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           SizedBox(width: 130, child: Text(l, style: TextStyle(color: Theme.of(context).hintColor))),
-          Expanded(child: Text((v == null || v.isEmpty) ? 'â€”' : v, style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(child: Text((v == null || v.isEmpty) ? '—' : v, style: const TextStyle(fontWeight: FontWeight.w600))),
         ]),
       );
 
@@ -151,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final f = r?.files.single;
         if (f == null || f.bytes == null) return;
         if (f.size > 2 * 1024 * 1024) {
-          if (context.mounted) toast(context, 'La photo ne doit pas dÃ©passer 2 Mo.', error: true);
+          if (context.mounted) toast(context, 'La photo ne doit pas dépasser 2 Mo.', error: true);
           return;
         }
         await api.multipart('/api/profile/photo', files: [UploadFile('file', f.name, f.bytes!)]);
@@ -173,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
       context,
       title: 'Modifier mes informations',
       fields: (set) => [
-        Field(phone, 'TÃ©lÃ©phone', keyboard: TextInputType.phone),
+        Field(phone, 'Téléphone', keyboard: TextInputType.phone),
         Field(address, 'Adresse'),
         OutlinedButton.icon(
           onPressed: () async {
@@ -203,13 +203,13 @@ class _ProfilePageState extends State<ProfilePage> {
       title: 'Changer le mot de passe',
       fields: (_) => [
         Field(cur, 'Mot de passe actuel', obscure: true),
-        Field(next, 'Nouveau mot de passe', obscure: true, hint: '10 caractÃ¨res min., lettres et chiffres'),
+        Field(next, 'Nouveau mot de passe', obscure: true, hint: '10 caractères min., lettres et chiffres'),
       ],
       submit: () => api.put('/api/profile/password', body: {'currentPassword': cur.text, 'newPassword': next.text}),
     );
     if (ok == true) {
       // The backend revokes all earlier tokens after a password change.
-      await auth.forceSignOut('Mot de passe modifiÃ©. Reconnectez-vous avec le nouveau mot de passe.');
+      await auth.forceSignOut('Mot de passe modifié. Reconnectez-vous avec le nouveau mot de passe.');
     }
   }
 
@@ -227,7 +227,7 @@ class _ProfilePageState extends State<ProfilePage> {
       submit: () => api.post('/api/profile/email-change', body: {'newEmail': mail.text.trim(), 'password': pass.text}),
     );
     if (ok == true && context.mounted) {
-      toast(context, 'Un lien de confirmation a Ã©tÃ© envoyÃ© Ã  la nouvelle adresse.');
+      toast(context, 'Un lien de confirmation a été envoyé à la nouvelle adresse.');
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
 import '../../core/theme/app_theme.dart';
@@ -19,11 +19,11 @@ class AdminDashboardPage extends StatelessWidget {
         final avg = asDouble(gr['average']);
         return PageList([
           StatGrid([
-            StatCard(label: 'Ã‰tudiants', value: '${asInt(c['students']) ?? 0}', icon: Icons.people_outline),
-            StatCard(label: 'Ã‰tudiants actifs', value: '${asInt(c['activeStudents']) ?? 0}', icon: Icons.verified_user_outlined, color: EduColors.emerald),
+            StatCard(label: 'Étudiants', value: '${asInt(c['students']) ?? 0}', icon: Icons.people_outline),
+            StatCard(label: 'Étudiants actifs', value: '${asInt(c['activeStudents']) ?? 0}', icon: Icons.verified_user_outlined, color: EduColors.emerald),
             StatCard(label: 'Professeurs', value: '${asInt(c['professors']) ?? 0}', icon: Icons.school_outlined, color: EduColors.indigo),
             StatCard(label: 'Classes', value: '${asInt(c['classes']) ?? 0}', icon: Icons.groups_outlined, color: EduColors.violet),
-            StatCard(label: 'MatiÃ¨res', value: '${asInt(c['subjects']) ?? 0}', icon: Icons.category_outlined, color: EduColors.sky),
+            StatCard(label: 'Matières', value: '${asInt(c['subjects']) ?? 0}', icon: Icons.category_outlined, color: EduColors.sky),
             StatCard(label: 'Inscriptions actives', value: '${asInt(c['activeEnrollments']) ?? 0}', icon: Icons.how_to_reg_outlined, color: EduColors.orange),
             StatCard(label: 'Cours', value: '${asInt(c['courses']) ?? 0}', icon: Icons.menu_book_outlined),
             StatCard(label: 'Documents', value: '${asInt(c['documents']) ?? 0}', icon: Icons.description_outlined, color: EduColors.violet),
@@ -33,12 +33,12 @@ class AdminDashboardPage extends StatelessWidget {
             child: BarList([for (final r in maps(d['enrollmentsByClass'])) (str(r['className']) ?? '', asDouble(r['count']) ?? 0)]),
           ),
           Panel(
-            title: 'PrÃ©sences',
+            title: 'Présences',
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Taux d\'absence global : ${(asDouble(att['absenceRate']) ?? 0).toStringAsFixed(1)} %',
                   style: const TextStyle(fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
-              Text('PrÃ©sents ${asInt(att['present']) ?? 0} Â· Absents ${asInt(att['absent']) ?? 0} Â· Retards ${asInt(att['late']) ?? 0}',
+              Text('Présents ${asInt(att['present']) ?? 0} · Absents ${asInt(att['absent']) ?? 0} · Retards ${asInt(att['late']) ?? 0}',
                   style: TextStyle(color: Theme.of(context).hintColor)),
               const SizedBox(height: 10),
               BarList([for (final r in maps(att['bySubject'])) (str(r['subjectName']) ?? '', asDouble(r['absenceRate']) ?? 0)],
@@ -46,12 +46,12 @@ class AdminDashboardPage extends StatelessWidget {
             ]),
           ),
           Panel(
-            title: 'Notes Â· moyenne ${avg == null ? 'â€”' : avg.toStringAsFixed(2)} (${asInt(gr['count']) ?? 0} notes)',
+            title: 'Notes · moyenne ${avg == null ? '—' : avg.toStringAsFixed(2)} (${asInt(gr['count']) ?? 0} notes)',
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('RÃ©partition', style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text('Répartition', style: TextStyle(fontWeight: FontWeight.w700)),
               BarList([for (final r in maps(gr['distribution'])) (str(r['label']) ?? '', asDouble(r['count']) ?? 0)], color: EduColors.indigo),
               const SizedBox(height: 10),
-              const Text('Moyenne par matiÃ¨re', style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text('Moyenne par matière', style: TextStyle(fontWeight: FontWeight.w700)),
               BarList([
                 for (final r in maps(gr['bySubject']))
                   if (asDouble(r['average']) != null) (str(r['subjectName']) ?? '', asDouble(r['average'])!)
@@ -70,7 +70,8 @@ class _AccountsPage extends StatefulWidget {
   final String createLabel;
   final List<(String, String, TextInputType?)> createFields;
   final String Function(JMap) subtitle;
-  const _AccountsPage({required this.path, required this.createLabel, required this.createFields, required this.subtitle});
+  final bool isProfessor;
+  const _AccountsPage({required this.path, required this.createLabel, required this.createFields, required this.subtitle, this.isProfessor = false});
   @override
   State<_AccountsPage> createState() => _AccountsPageState();
 }
@@ -92,28 +93,37 @@ class _AccountsPageState extends State<_AccountsPage> {
           final q = search.text.trim().toLowerCase();
           final items = all.where((u) => q.isEmpty || '${u['firstName']} ${u['lastName']} ${u['email']} ${widget.subtitle(u)}'.toLowerCase().contains(q)).toList();
           return PageList([
-            TextField(controller: search, onChanged: (_) => setState(() {}), decoration: const InputDecoration(hintText: 'Rechercher', prefixIcon: Icon(Icons.search))),
+            TextField(controller: search, onChanged: (_) => setState(() {}), decoration: InputDecoration(hintText: tr('Rechercher'), prefixIcon: Icon(Icons.search))),
             if (items.isEmpty) const EmptyState('Aucun compte'),
             for (final u in items)
               ListTileCard(
                 leading: Avatar('${(str(u['firstName']) ?? '?')[0]}${(str(u['lastName']) ?? '?')[0]}'.toUpperCase()),
                 title: Text('${u['firstName']} ${u['lastName']}'),
                 subtitle: Text('${str(u['email']) ?? ''}\n${widget.subtitle(u)}'),
-                trailing: PopupMenuButton<String>(
-                  child: Badge2(statusFr[u['status']] ?? str(u['status']) ?? '', color: statusColor(str(u['status']) ?? '')),
-                  onSelected: (s) async {
-                    try {
-                      await api.patch('${widget.path}/${u['id']}/status', body: {'status': s});
-                      setState(() => k = UniqueKey());
-                    } catch (e) {
-                      if (context.mounted) toastError(context, e);
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    for (final s in const ['ACTIVE', 'INACTIVE', 'SUSPENDED'])
-                      if (s != u['status']) PopupMenuItem(value: s, child: Text('Passer Ã  Â« ${statusFr[s]} Â»')),
-                  ],
-                ),
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  PopupMenuButton<String>(
+                    child: Badge2(statusFr[u['status']] ?? str(u['status']) ?? '', color: statusColor(str(u['status']) ?? '')),
+                    onSelected: (s) async {
+                      try {
+                        await api.patch('${widget.path}/${u['id']}/status', body: {'status': s});
+                        setState(() => k = UniqueKey());
+                      } catch (e) {
+                        if (context.mounted) toastError(context, e);
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      for (final s in const ['ACTIVE', 'INACTIVE', 'SUSPENDED'])
+                        if (s != u['status']) PopupMenuItem(value: s, child: Text('Passer à « ${statusFr[s]} »')),
+                    ],
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (v) => v == 'cin' ? _editCin(context, u) : _editType(context, u),
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(value: 'cin', child: Text('Modifier le CIN')),
+                      if (widget.isProfessor) const PopupMenuItem(value: 'type', child: Text('Changer le type')),
+                    ],
+                  ),
+                ]),
               ),
           ]);
         },
@@ -121,22 +131,70 @@ class _AccountsPageState extends State<_AccountsPage> {
     );
   }
 
+  Future<void> _editCin(BuildContext context, JMap u) async {
+    final api = apiOf(context);
+    final c = TextEditingController(text: str(u['cin']) ?? '');
+    final ok = await showFormSheet(
+      context,
+      title: 'Modifier le CIN',
+      fields: (_) => [Field(c, 'CIN (8 chiffres)', keyboard: TextInputType.phone)],
+      submit: () => api.put('/api/admin/users/${u['id']}/cin', body: {'cin': c.text.trim()}),
+    );
+    if (ok == true) setState(() => k = UniqueKey());
+  }
+
+  Future<void> _editType(BuildContext context, JMap u) async {
+    final api = apiOf(context);
+    String type = str(u['professorType']) == 'VACATAIRE' ? 'VACATAIRE' : 'PERMANENT';
+    final ok = await showFormSheet(
+      context,
+      title: 'Type de professeur',
+      fields: (set) => [
+        Dropdown<String>(
+          label: 'Type',
+          value: type,
+          items: const [
+            DropdownMenuItem(value: 'PERMANENT', child: Text('Permanent')),
+            DropdownMenuItem(value: 'VACATAIRE', child: Text('Vacataire')),
+          ],
+          onChanged: (v) => set(() => type = v ?? type),
+        ),
+      ],
+      submit: () => api.put('/api/admin/professors/${u['id']}/type', body: {'type': type}),
+    );
+    if (ok == true) setState(() => k = UniqueKey());
+  }
+
   Future<void> _create(BuildContext context) async {
     final api = apiOf(context);
     final ctrls = {for (final f in widget.createFields) f.$1: TextEditingController()};
+    String professorType = 'PERMANENT';
     final ok = await showFormSheet(
       context,
       title: widget.createLabel,
-      action: 'CrÃ©er le compte',
-      fields: (_) => [for (final f in widget.createFields) Field(ctrls[f.$1]!, f.$2, keyboard: f.$3)],
+      action: 'Créer le compte',
+      fields: (set) => [
+        for (final f in widget.createFields) Field(ctrls[f.$1]!, f.$2, keyboard: f.$3),
+        if (widget.isProfessor)
+          Dropdown<String>(
+            label: 'Type',
+            value: professorType,
+            items: const [
+              DropdownMenuItem(value: 'PERMANENT', child: Text('Permanent')),
+              DropdownMenuItem(value: 'VACATAIRE', child: Text('Vacataire')),
+            ],
+            onChanged: (v) => set(() => professorType = v ?? professorType),
+          ),
+      ],
       submit: () => api.post(widget.path, body: {
         for (final f in widget.createFields)
           f.$1: f.$3 == TextInputType.number ? int.tryParse(ctrls[f.$1]!.text.trim()) : ctrls[f.$1]!.text.trim(),
+        if (widget.isProfessor) 'professorType': professorType,
       }),
     );
     if (ok == true) {
       setState(() => k = UniqueKey());
-      if (context.mounted) toast(context, 'Compte crÃ©Ã©. Les identifiants sont envoyÃ©s par e-mail par le serveur.');
+      if (context.mounted) toast(context, 'Compte créé. Les identifiants sont envoyés par e-mail par le serveur.');
     }
   }
 }
@@ -148,15 +206,17 @@ class AdminProfessorsPage extends StatelessWidget {
         path: '/api/admin/professors',
         createLabel: 'Nouveau professeur',
         createFields: const [
-          ('firstName', 'PrÃ©nom', null),
+          ('firstName', 'Prénom', null),
           ('lastName', 'Nom', null),
           ('email', 'E-mail', TextInputType.emailAddress),
-          ('phone', 'TÃ©lÃ©phone', TextInputType.phone),
+          ('phone', 'Téléphone', TextInputType.phone),
           ('employeeNumber', 'Matricule', null),
-          ('department', 'DÃ©partement', null),
-          ('specialty', 'SpÃ©cialitÃ©', null),
+          ('department', 'Département', null),
+          ('specialty', 'Spécialité', null),
+          ('cin', 'CIN (8 chiffres)', TextInputType.phone),
         ],
-        subtitle: (u) => '${str(u['employeeNumber']) ?? ''} Â· ${str(u['department']) ?? ''} Â· ${str(u['specialty']) ?? ''}',
+        isProfessor: true,
+        subtitle: (u) => '${str(u['employeeNumber']) ?? ''} · ${str(u['department']) ?? ''} · ${str(u['specialty']) ?? ''} · ${str(u['professorType']) == 'VACATAIRE' ? 'Vacataire' : 'Permanent'} · CIN ${str(u['cin']) ?? '—'}',
       );
 }
 
@@ -165,18 +225,19 @@ class AdminStudentsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _AccountsPage(
         path: '/api/admin/students',
-        createLabel: 'Nouvel Ã©tudiant',
+        createLabel: 'Nouvel étudiant',
         createFields: const [
-          ('firstName', 'PrÃ©nom', null),
+          ('firstName', 'Prénom', null),
           ('lastName', 'Nom', null),
           ('email', 'E-mail', TextInputType.emailAddress),
-          ('phone', 'TÃ©lÃ©phone', TextInputType.phone),
-          ('studentNumber', 'NÂ° Ã©tudiant', null),
-          ('enrollmentYear', 'AnnÃ©e d\'inscription', TextInputType.number),
+          ('phone', 'Téléphone', TextInputType.phone),
+          ('studentNumber', 'N° étudiant', null),
+          ('enrollmentYear', 'Année d\'inscription', TextInputType.number),
           ('level', 'Niveau', null),
-          ('specialty', 'SpÃ©cialitÃ©', null),
+          ('specialty', 'Spécialité', null),
+          ('cin', 'CIN (8 chiffres)', TextInputType.phone),
         ],
-        subtitle: (u) => '${str(u['studentNumber']) ?? ''} Â· ${str(u['level']) ?? ''} Â· ${str(u['specialty']) ?? ''}',
+        subtitle: (u) => '${str(u['studentNumber']) ?? ''} · ${str(u['level']) ?? ''} · ${str(u['specialty']) ?? ''} · CIN ${str(u['cin']) ?? '—'}',
       );
 }
 
@@ -196,18 +257,18 @@ class _AdminSubjectsPageState extends State<AdminSubjectsPage> {
     final api = apiOf(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(context, null), icon: const Icon(Icons.add), label: const Text('Nouvelle matiÃ¨re')),
+      floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(context, null), icon: const Icon(Icons.add), label: const Text('Nouvelle matière')),
       body: AsyncBody<List<JMap>>(
         key: k,
         load: () async => maps(await api.get('/api/admin/subjects')),
         builder: (context, items, reload) => PageList([
-          if (items.isEmpty) const EmptyState('Aucune matiÃ¨re'),
+          if (items.isEmpty) const EmptyState('Aucune matière'),
           for (final s in items)
             Panel(
               title: '${s['name']}',
               trailing: Badge2(str(s['code']) ?? '', color: EduColors.primary),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Coefficient ${s['coefficient'] ?? 'â€”'} Â· ${s['credits'] ?? 'â€”'} crÃ©dits', style: TextStyle(color: Theme.of(context).hintColor)),
+                Text('Coefficient ${s['coefficient'] ?? '—'} · ${s['credits'] ?? '—'} crédits', style: TextStyle(color: Theme.of(context).hintColor)),
                 const SizedBox(height: 8),
                 Wrap(spacing: 6, runSpacing: 6, children: [
                   for (final p in maps(s['professors'])) Badge2('${p['firstName']} ${p['lastName']}', color: EduColors.emerald),
@@ -233,12 +294,12 @@ class _AdminSubjectsPageState extends State<AdminSubjectsPage> {
     final credits = TextEditingController(text: str(s?['credits']) ?? '');
     final ok = await showFormSheet(
       context,
-      title: s == null ? 'Nouvelle matiÃ¨re' : 'Modifier la matiÃ¨re',
+      title: s == null ? 'Nouvelle matière' : 'Modifier la matière',
       fields: (_) => [
         Field(name, 'Nom'),
         Field(code, 'Code'),
         Field(coef, 'Coefficient', keyboard: const TextInputType.numberWithOptions(decimal: true)),
-        Field(credits, 'CrÃ©dits', keyboard: TextInputType.number),
+        Field(credits, 'Crédits', keyboard: TextInputType.number),
       ],
       submit: () async {
         final body = {
@@ -270,7 +331,7 @@ class _AdminSubjectsPageState extends State<AdminSubjectsPage> {
     if (!context.mounted) return;
     final ok = await showFormSheet(
       context,
-      title: 'Professeurs de Â« ${s['name']} Â»',
+      title: 'Professeurs de « ${s['name']} »',
       fields: (set) => [
         for (final p in profs)
           CheckboxListTile(
@@ -312,7 +373,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
             ListTileCard(
               leading: Avatar((str(c['name']) ?? '?').substring(0, 1).toUpperCase(), color: EduColors.violet),
               title: Text('${c['name']}'),
-              subtitle: Text('${str(c['level']) ?? ''} Â· ${str(c['academicYear']) ?? ''} Â· ${maps(c['subjects']).length} matiÃ¨re(s)'),
+              subtitle: Text('${str(c['level']) ?? ''} · ${str(c['academicYear']) ?? ''} · ${maps(c['subjects']).length} matière(s)'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () async {
                 await Navigator.push(context, MaterialPageRoute(builder: (_) => ClassManagementPage(classInfo: c)));
@@ -332,7 +393,7 @@ class _AdminClassesPageState extends State<AdminClassesPage> {
     final ok = await showFormSheet(
       context,
       title: c == null ? 'Nouvelle classe' : 'Modifier la classe',
-      fields: (_) => [Field(name, 'Nom'), Field(level, 'Niveau'), Field(year, 'AnnÃ©e universitaire', hint: '2025-2026')],
+      fields: (_) => [Field(name, 'Nom'), Field(level, 'Niveau'), Field(year, 'Année universitaire', hint: '2025-2026')],
       submit: () async {
         final body = {'name': name.text.trim(), 'level': level.text.trim(), 'academicYear': year.text.trim()};
         if (c == null) {
@@ -364,7 +425,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
     final api = apiOf(context);
     return Scaffold(
       appBar: AppBar(title: Text(str(widget.classInfo['name']) ?? 'Classe'), actions: [
-        IconButton(tooltip: 'Modifier la classe', icon: const Icon(Icons.edit_outlined), onPressed: () => _editClass(context)),
+        IconButton(tooltip: tr('Modifier la classe'), icon: const Icon(Icons.edit_outlined), onPressed: () => _editClass(context)),
       ]),
       body: AsyncBody<JMap>(
         key: k,
@@ -385,7 +446,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
                           dense: true,
                           contentPadding: EdgeInsets.zero,
                           title: Text('${g['name']}'),
-                          subtitle: Text('${g['students']} Ã©tudiant(s)'),
+                          subtitle: Text('${g['students']} étudiant(s)'),
                           trailing: PopupMenuButton<String>(
                             onSelected: (v) => v == 'rename' ? _renameGroup(context, g) : _deleteGroup(context, g),
                             itemBuilder: (_) => const [
@@ -397,10 +458,10 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
                     ]),
             ),
             Panel(
-              title: 'MatiÃ¨res et professeurs',
-              trailing: TextButton.icon(onPressed: () => _assignSubjects(context, subjects), icon: const Icon(Icons.edit_outlined), label: const Text('MatiÃ¨res')),
+              title: 'Matières et professeurs',
+              trailing: TextButton.icon(onPressed: () => _assignSubjects(context, subjects), icon: const Icon(Icons.edit_outlined), label: const Text('Matières')),
               child: subjects.isEmpty
-                  ? const EmptyState('Aucune matiÃ¨re')
+                  ? const EmptyState('Aucune matière')
                   : Column(children: [
                       for (final s in subjects)
                         ListTile(
@@ -413,17 +474,17 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
                     ]),
             ),
             Panel(
-              title: 'Ã‰tudiants (${students.length})',
+              title: 'Étudiants (${students.length})',
               trailing: TextButton.icon(onPressed: () => _addStudents(context, groups), icon: const Icon(Icons.person_add_alt), label: const Text('Ajouter')),
               child: students.isEmpty
-                  ? const EmptyState('Aucun Ã©tudiant inscrit')
+                  ? const EmptyState('Aucun étudiant inscrit')
                   : Column(children: [
                       for (final s in students)
                         ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
                           title: Text('${s['name']}'),
-                          subtitle: Text('${str(s['studentNumber']) ?? ''} Â· ${str(s['groupName']) ?? 'Sans groupe'}'),
+                          subtitle: Text('${str(s['studentNumber']) ?? ''} · ${str(s['groupName']) ?? 'Sans groupe'}'),
                           trailing: PopupMenuButton<String>(
                             onSelected: (v) => v == 'group' ? _changeGroup(context, s, groups) : _removeStudent(context, s),
                             itemBuilder: (_) => const [
@@ -448,7 +509,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
     final year = TextEditingController(text: str(c['academicYear']) ?? '');
     final ok = await showFormSheet(context,
         title: 'Modifier la classe',
-        fields: (_) => [Field(name, 'Nom'), Field(level, 'Niveau'), Field(year, 'AnnÃ©e universitaire')],
+        fields: (_) => [Field(name, 'Nom'), Field(level, 'Niveau'), Field(year, 'Année universitaire')],
         submit: () => api.put('/api/admin/classes/$id', body: {'name': name.text.trim(), 'level': level.text.trim(), 'academicYear': year.text.trim()}));
     if (ok == true) refresh();
   }
@@ -470,7 +531,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
   }
 
   Future<void> _deleteGroup(BuildContext context, JMap g) async {
-    if (!await confirmDialog(context, 'Supprimer le groupe', 'Supprimer Â« ${g['name']} Â» ?', danger: true, ok: 'Supprimer')) return;
+    if (!await confirmDialog(context, 'Supprimer le groupe', 'Supprimer « ${g['name']} » ?', danger: true, ok: 'Supprimer')) return;
     try {
       await apiOf(context).delete('/api/admin/class-management/$id/groups/${g['id']}');
       refresh();
@@ -492,7 +553,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
     if (!context.mounted) return;
     final ok = await showFormSheet(
       context,
-      title: 'MatiÃ¨res de la classe',
+      title: 'Matières de la classe',
       fields: (set) => [
         for (final s in all)
           CheckboxListTile(
@@ -521,7 +582,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
     if (!context.mounted) return;
     final ok = await showFormSheet(
       context,
-      title: 'Professeurs Â· ${s['name']}',
+      title: 'Professeurs · ${s['name']}',
       fields: (set) => [
         for (final p in profs)
           CheckboxListTile(
@@ -553,7 +614,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
     if (!context.mounted) return;
     final ok = await showFormSheet(
       context,
-      title: 'Ajouter des Ã©tudiants',
+      title: 'Ajouter des étudiants',
       action: 'Ajouter',
       fields: (set) {
         if (!loaded) {
@@ -565,7 +626,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
             controller: q,
             onSubmitted: (_) => load(set),
             decoration: InputDecoration(
-              hintText: 'Rechercher un Ã©tudiant',
+              hintText: tr('Rechercher un étudiant'),
               prefixIcon: const Icon(Icons.search),
               suffixIcon: IconButton(icon: const Icon(Icons.arrow_forward), onPressed: () => load(set)),
             ),
@@ -587,7 +648,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
                   dense: true,
                   value: sel.contains(asInt(c['id'])),
                   title: Text('${c['name']}'),
-                  subtitle: Text('${str(c['studentNumber']) ?? ''} Â· ${str(c['email']) ?? ''}'),
+                  subtitle: Text('${str(c['studentNumber']) ?? ''} · ${str(c['email']) ?? ''}'),
                   onChanged: (v) => set(() => v == true ? sel.add(asInt(c['id'])!) : sel.remove(asInt(c['id']))),
                 ),
             ]),
@@ -596,7 +657,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
       },
       submit: () async {
         final r = await api.post('/api/admin/class-management/$id/students', body: {'studentIds': sel.toList(), 'groupId': groupId}) as Map;
-        if (context.mounted) toast(context, '${r['added']} ajoutÃ©(s), ${r['skipped']} ignorÃ©(s).');
+        if (context.mounted) toast(context, '${r['added']} ajouté(s), ${r['skipped']} ignoré(s).');
       },
     );
     if (ok == true) refresh();
@@ -622,7 +683,7 @@ class _ClassManagementPageState extends State<ClassManagementPage> {
   }
 
   Future<void> _removeStudent(BuildContext context, JMap s) async {
-    if (!await confirmDialog(context, 'Retirer l\'Ã©tudiant', 'Retirer ${s['name']} de cette classe ?', danger: true, ok: 'Retirer')) return;
+    if (!await confirmDialog(context, 'Retirer l\'étudiant', 'Retirer ${s['name']} de cette classe ?', danger: true, ok: 'Retirer')) return;
     try {
       await apiOf(context).delete('/api/admin/class-management/$id/students/${s['studentId']}');
       refresh();
@@ -644,7 +705,7 @@ class _AdminEnrollmentsPageState extends State<AdminEnrollmentsPage> {
   int? classId;
   List<JMap> classes = [];
   bool loadedClasses = false;
-  static const enrFr = {'ACTIVE': 'Active', 'COMPLETED': 'TerminÃ©e', 'CANCELLED': 'AnnulÃ©e'};
+  static const enrFr = {'ACTIVE': 'Active', 'COMPLETED': 'Terminée', 'CANCELLED': 'Annulée'};
 
   @override
   void initState() {
@@ -671,7 +732,7 @@ class _AdminEnrollmentsPageState extends State<AdminEnrollmentsPage> {
           child: DropdownButtonFormField<int?>(
             value: classId,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Filtrer par classe', isDense: true),
+            decoration: InputDecoration(labelText: tr('Filtrer par classe'), isDense: true),
             items: [const DropdownMenuItem<int?>(value: null, child: Text('Toutes les classes')), for (final c in classes) DropdownMenuItem<int?>(value: asInt(c['id']), child: Text('${c['name']}'))],
             onChanged: (v) => setState(() {
               classId = v;
@@ -688,7 +749,7 @@ class _AdminEnrollmentsPageState extends State<AdminEnrollmentsPage> {
               for (final e in items)
                 ListTileCard(
                   title: Text(str(e['studentName']) ?? ''),
-                  subtitle: Text('${str(e['className']) ?? ''}${(str(e['sectionName']) ?? '').isNotEmpty ? ' Â· ${e['sectionName']}' : ''} Â· ${str(e['academicYear']) ?? ''}\nInscrit le ${fmtDate(asDate(e['enrollmentDate']))}'),
+                  subtitle: Text('${str(e['className']) ?? ''}${(str(e['sectionName']) ?? '').isNotEmpty ? ' · ${e['sectionName']}' : ''} · ${str(e['academicYear']) ?? ''}\nInscrit le ${fmtDate(asDate(e['enrollmentDate']))}'),
                   trailing: PopupMenuButton<String>(
                     child: Badge2(enrFr[e['status']] ?? str(e['status']) ?? '', color: statusColor(str(e['status']) ?? '')),
                     onSelected: (s) async {
@@ -699,7 +760,7 @@ class _AdminEnrollmentsPageState extends State<AdminEnrollmentsPage> {
                         if (context.mounted) toastError(context, err);
                       }
                     },
-                    itemBuilder: (_) => [for (final s in enrFr.keys) if (s != e['status']) PopupMenuItem(value: s, child: Text('Passer Ã  Â« ${enrFr[s]} Â»'))],
+                    itemBuilder: (_) => [for (final s in enrFr.keys) if (s != e['status']) PopupMenuItem(value: s, child: Text('Passer à « ${enrFr[s]} »'))],
                   ),
                 ),
             ]),
@@ -730,7 +791,7 @@ class _AdminEnrollmentsPageState extends State<AdminEnrollmentsPage> {
       action: 'Inscrire',
       fields: (set) => [
         Dropdown<int>(
-          label: 'Ã‰tudiant',
+          label: 'Étudiant',
           value: studentId,
           items: [for (final s in students) DropdownMenuItem(value: asInt(s['id']), child: Text('${s['firstName']} ${s['lastName']} (${str(s['studentNumber']) ?? ''})', overflow: TextOverflow.ellipsis))],
           onChanged: (v) => set(() => studentId = v),

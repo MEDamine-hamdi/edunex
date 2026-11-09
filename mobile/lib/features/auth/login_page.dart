@@ -1,10 +1,11 @@
-﻿import 'dart:async';
+import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_controller.dart';
+import '../../core/i18n/language_switcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common.dart';
 
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
       fields: (_) => [
         const Text('URL de l\'API EduNex (backend Spring Boot).'),
         const SizedBox(height: 10),
-        Field(c, 'URL du serveur', keyboard: TextInputType.url, hint: 'https://â€¦'),
+        Field(c, 'URL du serveur', keyboard: TextInputType.url, hint: 'https://…'),
       ],
       submit: () async {
         final u = c.text.trim();
@@ -106,9 +107,10 @@ class _LoginPageState extends State<LoginPage> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(children: [
+                  const Align(alignment: AlignmentDirectional.centerEnd, child: LanguageSwitcher(compact: true)),
                   const EduLogo(size: 52),
                   const SizedBox(height: 8),
-                  Text('La plateforme de votre Ã©tablissement',
+                  Text('La plateforme de votre établissement',
                       style: TextStyle(color: Theme.of(context).hintColor, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 24),
                   Card(
@@ -117,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         const Text('Connexion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
                         const SizedBox(height: 4),
-                        Text('AccÃ©dez Ã  votre espace EduNex',
+                        Text('Accédez à votre espace EduNex',
                             style: TextStyle(color: Theme.of(context).hintColor)),
                         const SizedBox(height: 20),
                         if (auth.notice != null)
@@ -132,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: email,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [AutofillHints.username],
-                          decoration: const InputDecoration(labelText: 'Adresse e-mail', prefixIcon: Icon(Icons.mail_outline)),
+                          decoration: InputDecoration(labelText: tr('Adresse e-mail'), prefixIcon: Icon(Icons.mail_outline)),
                         ),
                         const SizedBox(height: 12),
                         TextField(
@@ -141,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                           autofillHints: const [AutofillHints.password],
                           onSubmitted: (_) => busy || locked ? null : _submit(),
                           decoration: InputDecoration(
-                            labelText: 'Mot de passe',
+                            labelText: tr('Mot de passe'),
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(show ? Icons.visibility_off_outlined : Icons.visibility_outlined),
@@ -152,10 +154,10 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 6),
                         Row(children: [
                           Checkbox(value: remember, onChanged: (v) => setState(() => remember = v ?? true)),
-                          const Expanded(child: Text('Rester connectÃ©')),
+                          const Expanded(child: Text('Rester connecté')),
                           TextButton(
                             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordPage())),
-                            child: const Text('Mot de passe oubliÃ© ?'),
+                            child: const Text('Mot de passe oublié ?'),
                           ),
                         ]),
                         if (error != null)
@@ -166,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (locked)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 10),
-                            child: Text('RÃ©essayez dans ${lockSeconds ~/ 60}:${(lockSeconds % 60).toString().padLeft(2, '0')}',
+                            child: Text('Réessayez dans ${lockSeconds ~/ 60}:${(lockSeconds % 60).toString().padLeft(2, '0')}',
                                 style: const TextStyle(color: EduColors.orange, fontWeight: FontWeight.w700)),
                           ),
                         FilledButton(
@@ -233,10 +235,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     final api = apiOf(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Mot de passe oubliÃ©')),
+      appBar: AppBar(title: const Text('Mot de passe oublié')),
       body: ListView(padding: const EdgeInsets.all(20), children: [
         if (!sent) ...[
-          const Text('Saisissez votre adresse e-mail : si un compte existe, vous recevrez un lien de rÃ©initialisation.'),
+          const Text('Saisissez votre adresse e-mail : si un compte existe, vous recevrez un lien de réinitialisation.'),
           const SizedBox(height: 16),
           Field(email, 'Adresse e-mail', keyboard: TextInputType.emailAddress),
           FilledButton(
@@ -248,12 +250,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     }),
             child: const Text('Envoyer le lien'),
           ),
-          TextButton(onPressed: () => setState(() => sent = true), child: const Text('J\'ai dÃ©jÃ  reÃ§u un lien')),
+          TextButton(onPressed: () => setState(() => sent = true), child: const Text('J\'ai déjà reçu un lien')),
         ] else ...[
-          const Text('Collez le lien (ou le code) reÃ§u par e-mail puis choisissez un nouveau mot de passe '
-              '(10 caractÃ¨res minimum, avec lettres et chiffres).'),
+          const Text('Collez le lien (ou le code) reçu par e-mail puis choisissez un nouveau mot de passe '
+              '(10 caractères minimum, avec lettres et chiffres).'),
           const SizedBox(height: 16),
-          Field(token, 'Lien ou code reÃ§u par e-mail'),
+          Field(token, 'Lien ou code reçu par e-mail'),
           Field(pass, 'Nouveau mot de passe', obscure: true),
           FilledButton(
             onPressed: busy
@@ -262,11 +264,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       await api.post('/api/auth/reset-password',
                           body: {'token': _token(token.text), 'newPassword': pass.text}, auth: false);
                       if (mounted) {
-                        toast(context, 'Mot de passe modifiÃ©. Vous pouvez vous connecter.');
+                        toast(context, 'Mot de passe modifié. Vous pouvez vous connecter.');
                         Navigator.pop(context);
                       }
                     }),
-            child: const Text('RÃ©initialiser'),
+            child: const Text('Réinitialiser'),
           ),
         ],
         if (error != null)

@@ -1,13 +1,20 @@
-﻿import 'dart:io';
+import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart' hide Text;
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
 
 import '../api/api_client.dart';
+import '../i18n/i18n.dart';
+import '../i18n/text.dart';
 import '../auth/auth_controller.dart';
+import '../platform/file_saver_stub.dart' if (dart.library.js_interop) '../platform/file_saver_web.dart';
 import '../theme/app_theme.dart';
+
+export '../i18n/i18n.dart' show tr, dateLocale, I18n, LangScope;
+export '../i18n/text.dart';
 
 ApiClient apiOf(BuildContext c) => c.read<ApiClient>();
 
@@ -44,8 +51,8 @@ class EduLogo extends StatelessWidget {
 }
 
 // ---------- formatting ----------
-String fmtDate(DateTime? d) => d == null ? 'â€”' : DateFormat('dd MMM yyyy', 'fr').format(d);
-String fmtDateTime(DateTime? d) => d == null ? 'â€”' : DateFormat('dd MMM yyyy Â· HH:mm', 'fr').format(d.toLocal());
+String fmtDate(DateTime? d) => d == null ? '—' : DateFormat('dd MMM yyyy', dateLocale()).format(d);
+String fmtDateTime(DateTime? d) => d == null ? '—' : DateFormat('dd MMM yyyy · HH:mm', dateLocale()).format(d.toLocal());
 String isoDate(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 String hhmm(String? t) => (t == null || t.length < 5) ? (t ?? '') : t.substring(0, 5);
 String fmtSize(int? b) {
@@ -55,7 +62,7 @@ String fmtSize(int? b) {
   return '${(b / 1024 / 1024).toStringAsFixed(1)} Mo';
 }
 
-String num1(num? v) => v == null ? 'â€”' : v.toStringAsFixed(2);
+String num1(num? v) => v == null ? '—' : v.toStringAsFixed(2);
 
 const dayFr = {
   'MONDAY': 'Lundi',
@@ -78,7 +85,7 @@ const gradeTypeFr = {
 const statusFr = {'ACTIVE': 'Actif', 'INACTIVE': 'Inactif', 'SUSPENDED': 'Suspendu'};
 const audienceFr = {
   'ALL': 'Tout le monde',
-  'STUDENTS': 'Ã‰tudiants',
+  'STUDENTS': 'Étudiants',
   'PROFESSORS': 'Professeurs',
   'ADMIN_AGENTS': 'Agents',
   'CLASS': 'Une classe',
@@ -94,7 +101,7 @@ String roleLabel(String role) => switch (role) {
       'ROLE_ADMIN_AGENT' => 'Administration',
       'ROLE_PLATFORM_ADMIN' => 'Plateforme',
       'ROLE_PROFESSOR' => 'Professeur',
-      'ROLE_STUDENT' => 'Ã‰tudiant',
+      'ROLE_STUDENT' => 'Étudiant',
       _ => role,
     };
 
@@ -129,12 +136,17 @@ Future<bool> confirmDialog(BuildContext c, String title, String body, {String ok
 /// Downloads a protected file with the bearer token and opens it with the system viewer.
 Future<void> openProtectedFile(BuildContext c, String path, {String name = 'document'}) async {
   final api = apiOf(c);
-  toast(c, 'TÃ©lÃ©chargementâ€¦');
+  toast(c, 'Téléchargement…');
   try {
+    if (kIsWeb) {
+      final f = await api.fetchFile(path, fallbackName: name);
+      await saveBytesToBrowser(f.bytes, f.name, f.contentType);
+      return;
+    }
     final File f = await api.download(path, fallbackName: name);
     final r = await OpenFilex.open(f.path);
     if (r.type != ResultType.done && c.mounted) {
-      toast(c, 'Fichier enregistrÃ© mais aucune application pour l\'ouvrir (${r.message}).', error: true);
+      toast(c, 'Fichier enregistré mais aucune application pour l\'ouvrir (${r.message}).', error: true);
     }
   } catch (e) {
     if (c.mounted) toastError(c, e);
@@ -260,7 +272,7 @@ class ErrorState extends StatelessWidget {
           Text(error.toString(), textAlign: TextAlign.center),
           if (!forbidden) ...[
             const SizedBox(height: 14),
-            OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('RÃ©essayer')),
+            OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Réessayer')),
           ],
         ]),
       ),
@@ -350,17 +362,20 @@ class Field extends StatelessWidget {
   const Field(this.controller, this.label,
       {super.key, this.obscure = false, this.keyboard, this.maxLines = 1, this.hint, this.enabled = true});
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: TextField(
-          controller: controller,
-          obscureText: obscure,
-          keyboardType: keyboard,
-          maxLines: obscure ? 1 : maxLines,
-          enabled: enabled,
-          decoration: InputDecoration(labelText: label, hintText: hint),
-        ),
-      );
+  Widget build(BuildContext context) {
+    LangScope.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: keyboard,
+        maxLines: obscure ? 1 : maxLines,
+        enabled: enabled,
+        decoration: InputDecoration(labelText: tr(label), hintText: hint == null ? null : tr(hint!)),
+      ),
+    );
+  }
 }
 
 class Dropdown<T> extends StatelessWidget {
@@ -370,16 +385,19 @@ class Dropdown<T> extends StatelessWidget {
   final ValueChanged<T?> onChanged;
   const Dropdown({super.key, required this.label, required this.value, required this.items, required this.onChanged});
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) {
+    LangScope.of(context);
+    return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: DropdownButtonFormField<T>(
           value: value,
           isExpanded: true,
-          decoration: InputDecoration(labelText: label),
+          decoration: InputDecoration(labelText: tr(label)),
           items: items,
           onChanged: onChanged,
         ),
       );
+  }
 }
 
 /// Bottom-sheet form helper: runs [submit], shows API errors in place and closes on success.
@@ -445,7 +463,7 @@ Future<DateTime?> pickDate(BuildContext c, {DateTime? initial, DateTime? first, 
       initialDate: initial ?? DateTime.now(),
       firstDate: first ?? DateTime(2000),
       lastDate: last ?? DateTime(2100),
-      locale: const Locale('fr'),
+      locale: Locale(dateLocale()),
     );
 
 Future<TimeOfDay?> pickTime(BuildContext c, {TimeOfDay? initial}) =>
@@ -510,7 +528,7 @@ class BarList extends StatelessWidget {
   const BarList(this.rows, {super.key, this.max, this.color = EduColors.primary, this.fmt});
   @override
   Widget build(BuildContext context) {
-    if (rows.isEmpty) return const EmptyState('Aucune donnÃ©e');
+    if (rows.isEmpty) return const EmptyState('Aucune donnée');
     final m = max ?? rows.map((r) => r.$2).fold<double>(0, (a, b) => b > a ? b : a);
     return Column(children: [
       for (final r in rows)

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
 import '../../core/theme/app_theme.dart';
@@ -63,8 +63,8 @@ class _WeekTimetableViewState extends State<WeekTimetableView> {
                 k = UniqueKey();
               }),
               child: Column(children: [
-                Text('${fmtDate(week)} â€“ ${fmtDate(end)}', style: const TextStyle(fontWeight: FontWeight.w800)),
-                Text('Toucher pour revenir Ã  aujourd\'hui', style: TextStyle(fontSize: 11, color: Theme.of(context).hintColor)),
+                Text('${fmtDate(week)} – ${fmtDate(end)}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text('Toucher pour revenir à aujourd\'hui', style: TextStyle(fontSize: 11, color: Theme.of(context).hintColor)),
               ]),
             ),
           ),
@@ -78,7 +78,7 @@ class _WeekTimetableViewState extends State<WeekTimetableView> {
               await api.get(widget.path, query: {...widget.query, 'date': isoDate(week)}), WeekSession.fromJson),
           builder: (context, list, reload) {
             if (list.isEmpty) {
-              return ListView(children: const [EmptyState('Aucune sÃ©ance cette semaine', icon: Icons.event_available_outlined)]);
+              return ListView(children: const [EmptyState('Aucune séance cette semaine', icon: Icons.event_available_outlined)]);
             }
             list.sort((a, b) {
               final c = (a.date ?? DateTime(0)).compareTo(b.date ?? DateTime(0));
@@ -134,7 +134,7 @@ class _SessionCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Text('${hhmm(s.startTime)} â€“ ${hhmm(s.endTime)}', style: TextStyle(color: color, fontWeight: FontWeight.w900)),
+              Text('${hhmm(s.startTime)} – ${hhmm(s.endTime)}', style: TextStyle(color: color, fontWeight: FontWeight.w900)),
               const Spacer(),
               if (absent) const Badge2('Enseignant absent', color: EduColors.red),
             ]),
@@ -146,7 +146,7 @@ class _SessionCard extends StatelessWidget {
                 if ((s.className ?? '').isNotEmpty) s.className!,
                 if ((s.room ?? '').isNotEmpty) 'Salle ${s.room}',
                 if (mode != WeekMode.professor && (s.professorName ?? '').isNotEmpty) s.professorName!,
-              ].join(' Â· '),
+              ].join(' · '),
               style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor),
             ),
             if (absent && (s.absence!['reason'] ?? '').toString().isNotEmpty)
@@ -174,7 +174,7 @@ class _SessionCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: () => _declare(context, api, base),
                   icon: const Icon(Icons.person_off_outlined),
-                  label: Text(mode == WeekMode.admin ? 'Marquer l\'enseignant absent' : 'DÃ©clarer mon absence'),
+                  label: Text(mode == WeekMode.admin ? 'Marquer l\'enseignant absent' : 'Déclarer mon absence'),
                 ),
             ],
           ]),
@@ -187,9 +187,9 @@ class _SessionCard extends StatelessWidget {
     final reason = TextEditingController();
     final ok = await showFormSheet(
       context,
-      title: 'DÃ©clarer une absence',
+      title: 'Déclarer une absence',
       fields: (_) => [
-        Text('${s.subjectName} Â· ${fmtDate(s.date)} Â· ${hhmm(s.startTime)}â€“${hhmm(s.endTime)}'),
+        Text('${s.subjectName} · ${fmtDate(s.date)} · ${hhmm(s.startTime)}–${hhmm(s.endTime)}'),
         const SizedBox(height: 10),
         Field(reason, 'Motif (facultatif)', maxLines: 2),
       ],

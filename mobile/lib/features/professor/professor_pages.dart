@@ -1,5 +1,5 @@
-﻿import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/api/api_client.dart';
 import '../../core/models.dart';
@@ -19,16 +19,16 @@ class ProfessorDashboardPage extends StatelessWidget {
         final sessions = listOf(d['upcomingSessions'], SessionItem.fromJson);
         return PageList([
           StatGrid([
-            StatCard(label: 'MatiÃ¨res', value: '${asInt(d['subjects']) ?? 0}', icon: Icons.category_outlined),
+            StatCard(label: 'Matières', value: '${asInt(d['subjects']) ?? 0}', icon: Icons.category_outlined),
             StatCard(label: 'Cours', value: '${asInt(d['courses']) ?? 0}', icon: Icons.menu_book_outlined, color: EduColors.indigo),
             StatCard(label: 'Documents', value: '${asInt(d['documents']) ?? 0}', icon: Icons.description_outlined, color: EduColors.violet),
             StatCard(label: 'Classes', value: '${asInt(d['classes']) ?? 0}', icon: Icons.groups_outlined, color: EduColors.emerald),
-            StatCard(label: 'Ã‰tudiants', value: '${asInt(d['students']) ?? 0}', icon: Icons.people_outline, color: EduColors.sky),
+            StatCard(label: 'Étudiants', value: '${asInt(d['students']) ?? 0}', icon: Icons.people_outline, color: EduColors.sky),
           ]),
           Panel(
-            title: 'Prochaines sÃ©ances',
+            title: 'Prochaines séances',
             child: sessions.isEmpty
-                ? const EmptyState('Aucune sÃ©ance Ã  venir')
+                ? const EmptyState('Aucune séance à venir')
                 : Column(children: [
                     for (final s in sessions) Padding(padding: const EdgeInsets.only(bottom: 8), child: sessionTile(context, s, showProfessor: false))
                   ]),
@@ -48,7 +48,7 @@ class ProfessorSubjectsPage extends StatelessWidget {
     return AsyncBody<List<SubjectRef>>(
       load: () async => listOf(await api.get('/api/professor/subjects'), SubjectRef.fromJson),
       builder: (context, items, reload) {
-        if (items.isEmpty) return ListView(children: const [EmptyState('Aucune matiÃ¨re affectÃ©e')]);
+        if (items.isEmpty) return ListView(children: const [EmptyState('Aucune matière affectée')]);
         return PageList([
           for (final s in items)
             ListTileCard(
@@ -76,12 +76,12 @@ class _RosterView extends StatelessWidget {
     return AsyncBody<List<JMap>>(
       load: () async => maps(await api.get('/api/professor/subjects/$subjectId/students')),
       builder: (context, items, reload) => PageList([
-        if (items.isEmpty) const EmptyState('Aucun Ã©tudiant'),
+        if (items.isEmpty) const EmptyState('Aucun étudiant'),
         for (final s in items)
           ListTileCard(
             leading: Avatar((str(s['studentName']) ?? '?').substring(0, 1).toUpperCase()),
             title: Text(str(s['studentName']) ?? ''),
-            subtitle: Text('${str(s['studentNumber']) ?? ''} Â· ${str(s['className']) ?? ''}'),
+            subtitle: Text('${str(s['studentNumber']) ?? ''} · ${str(s['className']) ?? ''}'),
           ),
       ]),
     );
@@ -112,14 +112,14 @@ class ProfessorClassesPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: Text('Ã‰tudiants (${maps(c['students']).length})', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  title: Text('Étudiants (${maps(c['students']).length})', style: const TextStyle(fontWeight: FontWeight.w700)),
                   children: [
                     for (final s in maps(c['students']))
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         title: Text(str(s['name']) ?? ''),
-                        subtitle: Text('${str(s['studentNumber']) ?? ''}${(str(s['section']) ?? '').isNotEmpty ? ' Â· ${s['section']}' : ''}'),
+                        subtitle: Text('${str(s['studentNumber']) ?? ''}${(str(s['section']) ?? '').isNotEmpty ? ' · ${s['section']}' : ''}'),
                       ),
                   ],
                 ),
@@ -156,7 +156,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
         key: k,
         load: () async => listOf(await api.get('/api/professor/courses'), Course.fromJson),
         builder: (context, items, reload) {
-          if (items.isEmpty) return ListView(children: const [EmptyState('Aucun cours. CrÃ©ez votre premier cours.', icon: Icons.menu_book_outlined)]);
+          if (items.isEmpty) return ListView(children: const [EmptyState('Aucun cours. Créez votre premier cours.', icon: Icons.menu_book_outlined)]);
           return PageList([
             for (final c in items)
               CourseCard(
@@ -200,7 +200,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
           submit: () => api.put('/api/professor/documents/${d.id}', body: {'title': t.text.trim()}));
       if (ok == true) refresh();
     } else if (v == 'delete') {
-      if (!await confirmDialog(context, 'Supprimer le document', 'Supprimer Â« ${d.title} Â» ?', danger: true, ok: 'Supprimer')) return;
+      if (!await confirmDialog(context, 'Supprimer le document', 'Supprimer « ${d.title} » ?', danger: true, ok: 'Supprimer')) return;
       try {
         await api.delete('/api/professor/documents/${d.id}');
         refresh();
@@ -224,7 +224,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
     final ok = await showFormSheet(
       context,
       title: 'Ajouter un document',
-      action: 'TÃ©lÃ©verser',
+      action: 'Téléverser',
       fields: (_) => [Text(f.name), const SizedBox(height: 10), Field(t, 'Titre')],
       submit: () => api.multipart('/api/professor/courses/${c.id}/documents',
           fields: {'title': t.text.trim()}, files: [UploadFile('file', f.name, f.bytes!)]),
@@ -233,7 +233,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
   }
 
   Future<void> _deleteCourse(BuildContext context, Course c) async {
-    if (!await confirmDialog(context, 'Supprimer le cours', 'Supprimer Â« ${c.title} Â» et ses documents ?', danger: true, ok: 'Supprimer')) return;
+    if (!await confirmDialog(context, 'Supprimer le cours', 'Supprimer « ${c.title} » et ses documents ?', danger: true, ok: 'Supprimer')) return;
     try {
       await apiOf(context).delete('/api/professor/courses/${c.id}');
       refresh();
@@ -252,7 +252,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
       return;
     }
     if (subjects.isEmpty) {
-      if (context.mounted) toast(context, 'Aucune matiÃ¨re ne vous est affectÃ©e.', error: true);
+      if (context.mounted) toast(context, 'Aucune matière ne vous est affectée.', error: true);
       return;
     }
     final title = TextEditingController(text: c?.title ?? '');
@@ -266,7 +266,7 @@ class _ProfessorCoursesPageState extends State<ProfessorCoursesPage> {
         Field(title, 'Titre'),
         Field(desc, 'Description', maxLines: 3),
         Dropdown<int>(
-          label: 'MatiÃ¨re',
+          label: 'Matière',
           value: subjectId,
           items: [for (final s in subjects) DropdownMenuItem(value: s.id, child: Text(s.label))],
           onChanged: (v) => set(() => subjectId = v),
@@ -306,15 +306,15 @@ class _ProfessorAttendancePageState extends State<ProfessorAttendancePage> {
         final upcoming = maps(d['upcoming']);
         return PageList([
           Panel(
-            title: 'SÃ©ances ouvertes Ã  l\'appel',
+            title: 'Séances ouvertes à l\'appel',
             child: open.isEmpty
-                ? const EmptyState('Aucune sÃ©ance ouverte pour le moment', icon: Icons.how_to_reg_outlined)
+                ? const EmptyState('Aucune séance ouverte pour le moment', icon: Icons.how_to_reg_outlined)
                 : Column(children: [for (final s in open) _sessionRow(context, s, true)]),
           ),
           Panel(
-            title: 'SÃ©ances Ã  venir',
+            title: 'Séances à venir',
             child: upcoming.isEmpty
-                ? const EmptyState('Aucune sÃ©ance Ã  venir aujourd\'hui')
+                ? const EmptyState('Aucune séance à venir aujourd\'hui')
                 : Column(children: [for (final s in upcoming) _sessionRow(context, s, false)]),
           ),
           Panel(
@@ -322,7 +322,7 @@ class _ProfessorAttendancePageState extends State<ProfessorAttendancePage> {
             child: FilledButton.tonalIcon(
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _AttendanceSummaryPicker())),
               icon: const Icon(Icons.bar_chart),
-              label: const Text('Bilan des prÃ©sences par matiÃ¨re'),
+              label: const Text('Bilan des présences par matière'),
             ),
           ),
         ]);
@@ -331,10 +331,10 @@ class _ProfessorAttendancePageState extends State<ProfessorAttendancePage> {
   }
 
   Widget _sessionRow(BuildContext context, JMap s, bool open) => ListTileCard(
-        title: Text('${str(s['subjectName'])} Â· ${str(s['className'])}'),
-        subtitle: Text('${hhmm(str(s['startTime']))}â€“${hhmm(str(s['endTime']))}'
-            '${(str(s['room']) ?? '').isNotEmpty ? ' Â· Salle ${s['room']}' : ''}'
-            '${open ? '' : ' Â· ouvre Ã  ${hhmm(str(s['opensAt']))}'}'),
+        title: Text('${str(s['subjectName'])} · ${str(s['className'])}'),
+        subtitle: Text('${hhmm(str(s['startTime']))}–${hhmm(str(s['endTime']))}'
+            '${(str(s['room']) ?? '').isNotEmpty ? ' · Salle ${s['room']}' : ''}'
+            '${open ? '' : ' · ouvre à ${hhmm(str(s['opensAt']))}'}'),
         trailing: open ? const Icon(Icons.chevron_right) : const Icon(Icons.lock_clock_outlined),
         onTap: open
             ? () => Navigator.push(
@@ -406,7 +406,7 @@ class _TakeAttendanceViewState extends State<TakeAttendanceView> {
         ],
       });
       if (mounted) {
-        toast(context, 'Appel enregistrÃ©.');
+        toast(context, 'Appel enregistré.');
         Navigator.pop(context);
       }
     } catch (e) {
@@ -430,7 +430,7 @@ class _TakeAttendanceViewState extends State<TakeAttendanceView> {
         child: PageList([
           Text('Appel du ${fmtDate(date)}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           Row(children: [
-            TextButton(onPressed: () => setState(() { for (final r in roster) { status[asInt(r['studentId'])!] = 'PRESENT'; } }), child: const Text('Tous prÃ©sents')),
+            TextButton(onPressed: () => setState(() { for (final r in roster) { status[asInt(r['studentId'])!] = 'PRESENT'; } }), child: const Text('Tous présents')),
           ]),
           for (final r in roster)
             Builder(builder: (context) {
@@ -444,7 +444,7 @@ class _TakeAttendanceViewState extends State<TakeAttendanceView> {
                   SegmentedButton<String>(
                     showSelectedIcon: false,
                     segments: const [
-                      ButtonSegment(value: 'PRESENT', label: Text('PrÃ©sent')),
+                      ButtonSegment(value: 'PRESENT', label: Text('Présent')),
                       ButtonSegment(value: 'LATE', label: Text('Retard')),
                       ButtonSegment(value: 'ABSENT', label: Text('Absent')),
                     ],
@@ -455,7 +455,7 @@ class _TakeAttendanceViewState extends State<TakeAttendanceView> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: justif.putIfAbsent(id, () => TextEditingController()),
-                      decoration: const InputDecoration(labelText: 'Justification (facultatif)'),
+                      decoration: InputDecoration(labelText: tr('Justification (facultatif)')),
                     ),
                   ],
                 ]),
@@ -486,7 +486,7 @@ class _AttendanceSummaryPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final api = apiOf(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bilan des prÃ©sences')),
+      appBar: AppBar(title: const Text('Bilan des présences')),
       body: AsyncBody<List<SubjectRef>>(
         load: () async => listOf(await api.get('/api/professor/subjects'), SubjectRef.fromJson),
         builder: (context, subjects, reload) => PageList([
@@ -515,11 +515,11 @@ class _SummaryView extends StatelessWidget {
     return AsyncBody<List<JMap>>(
       load: () async => maps(await api.get('/api/professor/subjects/$subjectId/attendance/summary')),
       builder: (context, items, reload) => PageList([
-        if (items.isEmpty) const EmptyState('Aucune donnÃ©e'),
+        if (items.isEmpty) const EmptyState('Aucune donnée'),
         for (final s in items)
           ListTileCard(
             title: Text(str(s['studentName']) ?? ''),
-            subtitle: Text('${str(s['studentNumber']) ?? ''}\nPrÃ©sences ${asInt(s['present'])} Â· Absences ${asInt(s['absent'])} Â· Retards ${asInt(s['late'])} / ${asInt(s['total'])}'),
+            subtitle: Text('${str(s['studentNumber']) ?? ''}\nPrésences ${asInt(s['present'])} · Absences ${asInt(s['absent'])} · Retards ${asInt(s['late'])} / ${asInt(s['total'])}'),
           ),
       ]),
     );

@@ -1,4 +1,4 @@
-﻿// Typed views over the backend DTOs (record shapes read from the Spring source).
+// Typed views over the backend DTOs (record shapes read from the Spring source).
 
 typedef JMap = Map<String, dynamic>;
 
@@ -247,4 +247,4 @@ class RequestView {
         fileName = str(j['fileName']);
 }
 
-const requestStatusFr = {'FILED': 'DÃ©posÃ©e', 'IN_PROGRESS': 'En cours', 'READY_FOR_PICKUP': 'PrÃªte Ã  retirer'};
+const requestStatusFr = {'FILED': 'Déposée', 'IN_PROGRESS': 'En cours', 'READY_FOR_PICKUP': 'Prête à retirer'};

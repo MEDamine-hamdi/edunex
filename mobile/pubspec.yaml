@@ -1,4 +1,4 @@
-﻿name: edunex_mobile
+name: edunex_mobile
 description: EduNex mobile app (Student, Professor, Administration Agent, Platform Administrator).
 publish_to: "none"
 version: 1.0.0+1
@@ -21,6 +21,7 @@ dependencies:
   url_launcher: ^6.3.0
   intl: ^0.20.2
   http_parser: ^4.0.2
+  web: ^1.1.0
 
 dev_dependencies:
   flutter_test:

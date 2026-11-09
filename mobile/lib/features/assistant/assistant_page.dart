@@ -1,5 +1,5 @@
-﻿import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/api/api_client.dart';
 import '../../core/models.dart';
@@ -91,11 +91,11 @@ class _AssistantPageState extends State<AssistantPage> {
     final text = input.text.trim();
     if (text.isEmpty || sending) return;
     if (text.length > 2000) {
-      toast(context, 'Message trop long (2000 caractÃ¨res maximum).', error: true);
+      toast(context, 'Message trop long (2000 caractères maximum).', error: true);
       return;
     }
     if ((scopeKind == 'SUBJECT' && subjectId == null) || (scopeKind == 'COURSE' && courseId == null)) {
-      toast(context, 'Choisissez d\'abord une matiÃ¨re ou un cours.', error: true);
+      toast(context, 'Choisissez d\'abord une matière ou un cours.', error: true);
       return;
     }
     final api = apiOf(context);
@@ -136,9 +136,9 @@ class _AssistantPageState extends State<AssistantPage> {
         messages.add(ChatMessage.fromJson({
           'role': 'ASSISTANT',
           'content': status == 503
-              ? 'L\'assistant IA est momentanÃ©ment indisponible. RÃ©essayez dans un instant.'
+              ? 'L\'assistant IA est momentanément indisponible. Réessayez dans un instant.'
               : status == 429
-                  ? 'Vous envoyez trop de messages. Patientez un peu avant de rÃ©essayer.'
+                  ? 'Vous envoyez trop de messages. Patientez un peu avant de réessayer.'
                   : text,
         }));
       }
@@ -194,7 +194,7 @@ class _AssistantPageState extends State<AssistantPage> {
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline, color: EduColors.red),
                         onPressed: () async {
-                          if (!await confirmDialog(ctx, 'Supprimer la conversation', 'Supprimer Â« ${s.title} Â» ?', danger: true, ok: 'Supprimer')) return;
+                          if (!await confirmDialog(ctx, 'Supprimer la conversation', 'Supprimer « ${s.title} » ?', danger: true, ok: 'Supprimer')) return;
                           try {
                             await api.delete('/api/assistant/sessions/${s.id}');
                             if (sessionId == s.id) _newConversation();
@@ -247,7 +247,7 @@ class _AssistantPageState extends State<AssistantPage> {
       if (scopeInfo != null) _scopeNotice(context),
       Expanded(
         child: messages.isEmpty
-            ? const EmptyState('Posez une question sur vos cours ou sur le rÃ¨glement de l\'Ã©tablissement.', icon: Icons.auto_awesome_outlined)
+            ? const EmptyState('Posez une question sur vos cours ou sur le règlement de l\'établissement.', icon: Icons.auto_awesome_outlined)
             : ListView.builder(
                 controller: scroll,
                 padding: const EdgeInsets.all(16),
@@ -277,16 +277,16 @@ class _AssistantPageState extends State<AssistantPage> {
             child: SegmentedButton<String>(
               showSelectedIcon: false,
               segments: const [
-                ButtonSegment(value: 'GENERAL', label: Text('GÃ©nÃ©ral')),
-                ButtonSegment(value: 'SUBJECT', label: Text('MatiÃ¨re')),
+                ButtonSegment(value: 'GENERAL', label: Text('Général')),
+                ButtonSegment(value: 'SUBJECT', label: Text('Matière')),
                 ButtonSegment(value: 'COURSE', label: Text('Cours')),
               ],
               selected: {scopeKind},
               onSelectionChanged: (s) => _setScope(s.first),
             ),
           ),
-          IconButton(tooltip: 'Historique', onPressed: _history, icon: const Icon(Icons.history)),
-          IconButton(tooltip: 'Nouvelle conversation', onPressed: _newConversation, icon: const Icon(Icons.add_comment_outlined)),
+          IconButton(tooltip: tr('Historique'), onPressed: _history, icon: const Icon(Icons.history)),
+          IconButton(tooltip: tr('Nouvelle conversation'), onPressed: _newConversation, icon: const Icon(Icons.add_comment_outlined)),
         ]),
         if (scopeKind == 'SUBJECT')
           Padding(
@@ -294,7 +294,7 @@ class _AssistantPageState extends State<AssistantPage> {
             child: DropdownButtonFormField<int>(
               value: subjectId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'MatiÃ¨re', isDense: true),
+              decoration: InputDecoration(labelText: tr('Matière'), isDense: true),
               items: [for (final s in subjects) DropdownMenuItem(value: s.id, child: Text(s.label, overflow: TextOverflow.ellipsis))],
               onChanged: (v) => _setScope('SUBJECT', subject: v),
             ),
@@ -305,8 +305,8 @@ class _AssistantPageState extends State<AssistantPage> {
             child: DropdownButtonFormField<int>(
               value: courseId,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Cours', isDense: true),
-              items: [for (final c in courses) DropdownMenuItem(value: c.id, child: Text('${c.title} Â· ${c.subjectName ?? ''}', overflow: TextOverflow.ellipsis))],
+              decoration: InputDecoration(labelText: tr('Cours'), isDense: true),
+              items: [for (final c in courses) DropdownMenuItem(value: c.id, child: Text('${c.title} · ${c.subjectName ?? ''}', overflow: TextOverflow.ellipsis))],
               onChanged: (v) => _setScope('COURSE', course: v),
             ),
           ),
@@ -320,8 +320,8 @@ class _AssistantPageState extends State<AssistantPage> {
     final docs = asInt(info['documents']) ?? 0;
     final indexed = asInt(info['indexedDocuments']) ?? 0;
     final text = available
-        ? '${str(info['label']) ?? ''} Â· $indexed/$docs document(s) indexÃ©(s)'
-        : 'Aucun document indexÃ© pour Â« ${str(info['label']) ?? ''} Â» : l\'assistant rÃ©pondra sans sources de cours.';
+        ? '${str(info['label']) ?? ''} · $indexed/$docs document(s) indexé(s)'
+        : 'Aucun document indexé pour « ${str(info['label']) ?? ''} » : l\'assistant répondra sans sources de cours.';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -377,8 +377,8 @@ class _AssistantPageState extends State<AssistantPage> {
                     [
                       s.documentTitle ?? 'Document',
                       if ((s.courseTitle ?? '').isNotEmpty) s.courseTitle!,
-                      if (s.kind == 'INSTITUTE') 'Guide de l\'Ã©tablissement',
-                    ].join(' Â· '),
+                      if (s.kind == 'INSTITUTE') 'Guide de l\'établissement',
+                    ].join(' · '),
                     style: const TextStyle(fontSize: 11.5),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -419,7 +419,7 @@ class _AssistantPageState extends State<AssistantPage> {
                 maxLines: 5,
                 maxLength: 2000,
                 textInputAction: TextInputAction.newline,
-                decoration: const InputDecoration(hintText: 'Posez votre questionâ€¦', counterText: '', isDense: true),
+                decoration: InputDecoration(hintText: tr('Posez votre question…'), counterText: '', isDense: true),
               ),
             ),
             const SizedBox(width: 6),

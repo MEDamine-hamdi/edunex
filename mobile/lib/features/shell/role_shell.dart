@@ -1,16 +1,23 @@
-﻿import 'dart:async';
+import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_controller.dart';
+import '../../core/i18n/i18n.dart';
+import '../../core/i18n/language_switcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/widgets/common.dart';
 import '../admin/admin_pages.dart';
 import '../admin/admin_pages2.dart';
 import '../assistant/assistant_page.dart';
+import '../elimination/elimination_pages.dart';
+import '../internships/internships_pages.dart';
+import '../messaging/messaging_pages.dart';
 import '../platform/platform_pages.dart';
+import '../platform/user_rights_page.dart';
+import '../professor/delegated_pages.dart';
 import '../professor/professor_pages.dart';
 import '../shared/notifications_page.dart';
 import '../shared/profile_page.dart';
@@ -22,7 +29,9 @@ class NavDest {
   final String label;
   final IconData icon;
   final Widget Function() build;
-  const NavDest(this.label, this.icon, this.build);
+  /// Extra right (from GET /api/users/me/permissions) needed for this entry to show.
+  final String? requires;
+  const NavDest(this.label, this.icon, this.build, {this.requires});
   String get short => label.startsWith('Emploi') ? 'Planning' : label;
 }
 
@@ -36,9 +45,11 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Mes cours', Icons.menu_book_outlined, () => const StudentCoursesPage()),
         NavDest('Emploi du temps', Icons.calendar_month_outlined, () => const WeekTimetablePage(role: 'student')),
         NavDest('Assistant IA', Icons.auto_awesome_outlined, () => const AssistantPage()),
-        NavDest('Mes matiÃ¨res', Icons.category_outlined, () => const StudentSubjectsPage()),
+        NavDest('Mes matières', Icons.category_outlined, () => const StudentSubjectsPage()),
         NavDest('Absences', Icons.event_busy_outlined, () => const StudentAttendancePage()),
+        NavDest("Seuil d'absences", Icons.report_gmailerrorred_outlined, () => const StudentEliminationPage()),
         NavDest('Notes', Icons.grade_outlined, () => const StudentGradesPage()),
+        NavDest('Mon stage', Icons.work_outline, () => const InternshipsMinePage()),
         NavDest('Demandes de documents', Icons.description_outlined, () => const RequestsPage()),
         notifications,
         profile,
@@ -47,10 +58,13 @@ List<NavDest> destinationsFor(String role) {
       return [
         NavDest('Accueil', Icons.dashboard_outlined, () => const ProfessorDashboardPage()),
         NavDest('Mes cours', Icons.menu_book_outlined, () => const ProfessorCoursesPage()),
-        NavDest('PrÃ©sences', Icons.how_to_reg_outlined, () => const ProfessorAttendancePage()),
+        NavDest('Présences', Icons.how_to_reg_outlined, () => const ProfessorAttendancePage()),
         NavDest('Emploi du temps', Icons.calendar_month_outlined, () => const WeekTimetablePage(role: 'professor')),
-        NavDest('Mes matiÃ¨res', Icons.category_outlined, () => const ProfessorSubjectsPage()),
+        NavDest('Mes matières', Icons.category_outlined, () => const ProfessorSubjectsPage()),
         NavDest('Mes classes', Icons.groups_outlined, () => const ProfessorClassesPage()),
+        NavDest('Stages et soutenances', Icons.work_outline, () => const InternshipsMinePage()),
+        NavDest('Saisie des notes', Icons.edit_note_outlined, () => const DelegatedGradesPage(), requires: 'GRADES_MANAGE'),
+        NavDest('Gestion des emplois du temps', Icons.edit_calendar_outlined, () => const DelegatedTimetablePage(), requires: 'TIMETABLE_MANAGE'),
         NavDest('Demandes de documents', Icons.description_outlined, () => const RequestsPage()),
         notifications,
         profile,
@@ -62,11 +76,13 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Annonces', Icons.campaign_outlined, () => const AdminAnnouncementsPage()),
         NavDest('Demandes', Icons.description_outlined, () => const AdminRequestsPage()),
         NavDest('Professeurs', Icons.school_outlined, () => const AdminProfessorsPage()),
-        NavDest('Ã‰tudiants', Icons.people_outline, () => const AdminStudentsPage()),
+        NavDest('Étudiants', Icons.people_outline, () => const AdminStudentsPage()),
         NavDest('Classes', Icons.groups_outlined, () => const AdminClassesPage()),
-        NavDest('MatiÃ¨res', Icons.category_outlined, () => const AdminSubjectsPage()),
+        NavDest('Matières', Icons.category_outlined, () => const AdminSubjectsPage()),
         NavDest('Inscriptions', Icons.how_to_reg_outlined, () => const AdminEnrollmentsPage()),
+        NavDest('Stages et soutenances', Icons.work_outline, () => const AdminInternshipsPage()),
         NavDest('Notes', Icons.grade_outlined, () => const AdminGradesPage()),
+        NavDest('Éliminations', Icons.person_remove_outlined, () => const AdminEliminationPage(), requires: 'ELIMINATION_MANAGE'),
         NavDest('Base de connaissances', Icons.psychology_outlined, () => const AdminKnowledgePage()),
         NavDest('Absences des enseignants', Icons.person_off_outlined, () => const AdminAbsencesPage()),
         notifications,
@@ -78,9 +94,10 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Agents', Icons.badge_outlined, () => const PlatformAgentsPage()),
         NavDest('Journal', Icons.history, () => const PlatformLogsPage()),
         NavDest('Notifications', Icons.notifications_none, () => const NotificationsPage()),
-        NavDest('RÃ´les', Icons.admin_panel_settings_outlined, () => const PlatformRolesPage()),
+        NavDest('Rôles', Icons.admin_panel_settings_outlined, () => const PlatformRolesPage()),
         NavDest('Permissions', Icons.key_outlined, () => const PlatformPermissionsPage()),
-        NavDest('ParamÃ¨tres', Icons.settings_outlined, () => const PlatformSettingsPage()),
+        NavDest('Droits par personne', Icons.manage_accounts_outlined, () => const PlatformUserRightsPage()),
+        NavDest('Paramètres', Icons.settings_outlined, () => const PlatformSettingsPage()),
         NavDest('E-mails', Icons.mail_outline, () => const PlatformMailPage()),
         profile,
       ];
@@ -97,13 +114,18 @@ class RoleShell extends StatefulWidget {
 class _RoleShellState extends State<RoleShell> {
   int index = 0;
   int unread = 0;
+  int msgUnread = 0;
   Timer? timer;
-  late final List<NavDest> dests = destinationsFor(widget.user.role);
+  List<String> perms = const [];
+  late final List<NavDest> allDests = destinationsFor(widget.user.role);
+  List<NavDest> get dests => [for (final d in allDests) if (d.requires == null || perms.contains(d.requires)) d];
+  bool get hasMessaging => widget.user.role != 'ROLE_PLATFORM_ADMIN';
   static const primaryCount = 4;
 
   @override
   void initState() {
     super.initState();
+    _loadPerms();
     _poll();
     timer = Timer.periodic(const Duration(seconds: 60), (_) => _poll());
   }
@@ -114,11 +136,37 @@ class _RoleShellState extends State<RoleShell> {
     super.dispose();
   }
 
+  Future<void> _loadPerms() async {
+    try {
+      final r = await apiOf(context).get('/api/users/me/permissions') as List;
+      if (mounted) setState(() => perms = r.map((e) => e.toString()).toList());
+    } catch (_) {}
+  }
+
   Future<void> _poll() async {
     try {
       final r = await apiOf(context).get('/api/notifications/unread-count') as Map;
       if (mounted) setState(() => unread = (r['count'] as num?)?.toInt() ?? 0);
     } catch (_) {}
+    if (!hasMessaging) return;
+    try {
+      final r = await apiOf(context).get('/api/messaging/unread') as Map;
+      if (mounted) setState(() => msgUnread = (r['unread'] as num?)?.toInt() ?? 0);
+    } catch (_) {}
+  }
+
+  void _openMessages() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Messagerie')),
+          body: const MessagingPage(),
+        ))).then((_) => _poll());
+  }
+
+  void _openElimination() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text("Seuil d'absences")),
+          body: const StudentEliminationPage(),
+        )));
   }
 
   void _openNotifications() {
@@ -131,14 +179,26 @@ class _RoleShellState extends State<RoleShell> {
   @override
   Widget build(BuildContext context) {
     final u = widget.user;
-    final isMore = index >= primaryCount;
-    final title = isMore ? 'Plus' : dests[index].label;
+    final list = dests;
+    final idx = index >= list.length ? 0 : index;
+    final isMore = idx >= primaryCount;
+    final title = isMore ? 'Plus' : list[idx].label;
     return Scaffold(
       appBar: AppBar(
-        title: index == 0 ? const EduLogo(size: 30) : Text(title),
+        title: idx == 0 ? const EduLogo(size: 30) : Text(title),
         actions: [
+          if (hasMessaging)
+            IconButton(
+              tooltip: tr('Messagerie'),
+              onPressed: _openMessages,
+              icon: Badge(
+                isLabelVisible: msgUnread > 0,
+                label: Text(msgUnread > 99 ? '99+' : '$msgUnread'),
+                child: const Icon(Icons.chat_bubble_outline),
+              ),
+            ),
           IconButton(
-            tooltip: 'Notifications',
+            tooltip: tr('Notifications'),
             onPressed: _openNotifications,
             icon: Badge(
               isLabelVisible: unread > 0,
@@ -152,14 +212,17 @@ class _RoleShellState extends State<RoleShell> {
           ),
         ],
       ),
-      body: isMore ? _MoreMenu(dests: dests.sublist(primaryCount), user: u) : KeyedSubtree(key: ValueKey(index), child: dests[index].build()),
+      body: Column(children: [
+        if (u.role == 'ROLE_STUDENT') EliminationBanner(onOpen: _openElimination),
+        Expanded(child: isMore ? _MoreMenu(dests: list.sublist(primaryCount), user: u) : KeyedSubtree(key: ValueKey(idx), child: list[idx].build())),
+      ]),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: isMore ? primaryCount : index,
+        selectedIndex: isMore ? primaryCount : idx,
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: [
-          for (final d in dests.take(primaryCount))
-            NavigationDestination(icon: Icon(d.icon), label: d.short),
-          const NavigationDestination(icon: Icon(Icons.apps_rounded), label: 'Plus'),
+          for (final d in list.take(primaryCount))
+            NavigationDestination(icon: Icon(d.icon), label: tr(d.short)),
+          NavigationDestination(icon: const Icon(Icons.apps_rounded), label: tr('Plus')),
         ],
       ),
     );
@@ -203,19 +266,37 @@ class _MoreMenu extends StatelessWidget {
           ),
         ),
       const SizedBox(height: 8),
+      const _LanguageRow(),
+      const SizedBox(height: 8),
       _ThemeRow(),
       const SizedBox(height: 8),
       OutlinedButton.icon(
         onPressed: () async {
-          if (await confirmDialog(context, 'DÃ©connexion', 'Voulez-vous vous dÃ©connecter ?', ok: 'Se dÃ©connecter')) {
+          if (await confirmDialog(context, 'Déconnexion', 'Voulez-vous vous déconnecter ?', ok: 'Se déconnecter')) {
             if (context.mounted) await context.read<AuthController>().logout();
           }
         },
         icon: const Icon(Icons.logout, color: EduColors.red),
-        label: const Text('Se dÃ©connecter', style: TextStyle(color: EduColors.red)),
+        label: const Text('Se déconnecter', style: TextStyle(color: EduColors.red)),
       ),
     ]);
   }
+}
+
+class _LanguageRow extends StatelessWidget {
+  const _LanguageRow();
+  @override
+  Widget build(BuildContext context) => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Row(children: [
+            Icon(Icons.translate),
+            SizedBox(width: 10),
+            Expanded(child: Text('Langue', style: TextStyle(fontWeight: FontWeight.w700))),
+            LanguageSwitcher(),
+          ]),
+        ),
+      );
 }
 
 class _ThemeRow extends StatelessWidget {
@@ -228,7 +309,7 @@ class _ThemeRow extends StatelessWidget {
         child: Row(children: [
           const Icon(Icons.brightness_6_outlined),
           const SizedBox(width: 10),
-          const Expanded(child: Text('ThÃ¨me', style: TextStyle(fontWeight: FontWeight.w700))),
+          const Expanded(child: Text('Thème', style: TextStyle(fontWeight: FontWeight.w700))),
           SegmentedButton<ThemeMode>(
             showSelectedIcon: false,
             segments: const [

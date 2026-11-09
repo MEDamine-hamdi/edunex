@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -14,7 +14,10 @@ class ApiException implements Exception {
   final String message;
   final Map<String, String> fields;
   final int? retryAfterSeconds;
-  ApiException(this.status, this.message, {this.fields = const {}, this.retryAfterSeconds});
+  /// Machine code sent by the backend for forced-password flows
+  /// (PASSWORD_CHANGE_REQUIRED, TEMPORARY_PASSWORD_EXPIRED).
+  final String? code;
+  ApiException(this.status, this.message, {this.fields = const {}, this.retryAfterSeconds, this.code});
 
   bool get isForbidden => status == 403;
   bool get isUnauthorized => status == 401;
@@ -43,6 +46,7 @@ class ApiClient {
   String baseUrl;
   String? token;
   void Function()? onUnauthorized;
+  void Function()? onPasswordChangeRequired;
 
   ApiClient({this.baseUrl = ''});
 
@@ -58,8 +62,9 @@ class ApiClient {
   }
 
   Map<String, String> _headers({bool json = true, bool mobile = false}) => {
-        if (json) 'Content-Type': 'application/json',
+        if (json) 'Content-Type': 'application/json; charset=utf-8',
         'Accept': 'application/json',
+        'Accept-Charset': 'utf-8',
         if (token != null) 'Authorization': 'Bearer $token',
         if (mobile) 'X-Client': 'mobile',
       };
@@ -110,8 +115,8 @@ class ApiClient {
     return res.bodyBytes;
   }
 
-  /// Downloads a protected file (course document, attachment, request file...) to a temp file.
-  Future<File> download(String path, {String fallbackName = 'document'}) async {
+  /// Fetches a protected file (course document, attachment, request file...) with the bearer token.
+  Future<({Uint8List bytes, String name, String? contentType})> fetchFile(String path, {String fallbackName = 'document'}) async {
     final res = await _raw(() => http.get(_uri(path), headers: _headers(json: false)));
     var name = fallbackName;
     final cd = res.headers['content-disposition'];
@@ -125,9 +130,15 @@ class ApiClient {
       }
     }
     name = name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    return (bytes: res.bodyBytes, name: name, contentType: res.headers['content-type']);
+  }
+
+  /// Native platforms: saves the file to a temp directory.
+  Future<File> download(String path, {String fallbackName = 'document'}) async {
+    final f = await fetchFile(path, fallbackName: fallbackName);
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/$name');
-    await file.writeAsBytes(res.bodyBytes, flush: true);
+    final file = File('${dir.path}/${f.name}');
+    await file.writeAsBytes(f.bytes, flush: true);
     return file;
   }
 
@@ -136,11 +147,11 @@ class ApiClient {
     try {
       res = await call().timeout(timeout ?? _timeout);
     } on TimeoutException {
-      throw ApiException(0, 'Le serveur ne rÃ©pond pas. RÃ©essayez.');
+      throw ApiException(0, 'Le serveur ne répond pas. Réessayez.');
     } on SocketException {
-      throw ApiException(0, 'Connexion impossible. VÃ©rifiez votre rÃ©seau et l\'adresse du serveur.');
+      throw ApiException(0, 'Connexion impossible. Vérifiez votre réseau et l\'adresse du serveur.');
     } on http.ClientException {
-      throw ApiException(0, 'Connexion impossible. VÃ©rifiez votre rÃ©seau et l\'adresse du serveur.');
+      throw ApiException(0, 'Connexion impossible. Vérifiez votre réseau et l\'adresse du serveur.');
     }
     if (res.statusCode >= 200 && res.statusCode < 300) return res;
     throw _error(res);
@@ -153,6 +164,7 @@ class ApiClient {
       return jsonDecode(utf8.decode(res.bodyBytes));
     } on ApiException catch (e) {
       if (e.status == 401 && auth && token != null) onUnauthorized?.call();
+      if (e.status == 403 && e.code == 'PASSWORD_CHANGE_REQUIRED') onPasswordChangeRequired?.call();
       rethrow;
     }
   }
@@ -172,18 +184,26 @@ class ApiClient {
       }
     } catch (_) {}
     retry ??= int.tryParse(res.headers['retry-after'] ?? '');
+    String? code;
+    if (msg == 'PASSWORD_CHANGE_REQUIRED') {
+      code = msg;
+      msg = 'Vous devez d\'abord remplacer votre mot de passe provisoire.';
+    } else if (msg == 'TEMPORARY_PASSWORD_EXPIRED') {
+      code = msg;
+      msg = 'Votre mot de passe provisoire a expiré. Contactez l\'administration.';
+    }
     if (msg.isEmpty) {
       msg = switch (res.statusCode) {
-        401 => 'Session expirÃ©e ou identifiants incorrects.',
-        403 => 'AccÃ¨s refusÃ© : vous n\'avez pas la permission pour cette action.',
+        401 => 'Session expirée ou identifiants incorrects.',
+        403 => 'Accès refusé : vous n\'avez pas la permission pour cette action.',
         404 => 'Ressource introuvable.',
-        409 => 'Conflit : cette opÃ©ration n\'est pas possible.',
+        409 => 'Conflit : cette opération n\'est pas possible.',
         413 => 'Fichier trop volumineux.',
-        429 => 'Trop de tentatives. RÃ©essayez plus tard.',
-        503 => 'Service momentanÃ©ment indisponible.',
+        429 => 'Trop de tentatives. Réessayez plus tard.',
+        503 => 'Service momentanément indisponible.',
         _ => 'Erreur serveur (${res.statusCode}).',
       };
     }
-    return ApiException(res.statusCode, msg, fields: fields, retryAfterSeconds: retry);
+    return ApiException(res.statusCode, msg, fields: fields, retryAfterSeconds: retry, code: code);
   }
 }

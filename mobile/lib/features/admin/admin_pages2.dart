@@ -1,7 +1,7 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/api/api_client.dart';
 import '../../core/models.dart';
@@ -52,8 +52,8 @@ class _AdminTimetablesPageState extends State<AdminTimetablesPage> {
           for (final t in items)
             ListTileCard(
               leading: const Icon(Icons.calendar_month_outlined, color: EduColors.primary),
-              title: Text('${t['academicYear']} Â· ${t['semester']}'),
-              subtitle: Text('${t['sessionCount']} sÃ©ance(s)'),
+              title: Text('${t['academicYear']} · ${t['semester']}'),
+              subtitle: Text('${t['sessionCount']} séance(s)'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TimetableSessionsPage(timetable: t))).then((_) => refresh()),
             ),
@@ -68,7 +68,7 @@ class _AdminTimetablesPageState extends State<AdminTimetablesPage> {
     final sem = TextEditingController();
     final ok = await showFormSheet(context,
         title: 'Nouvel emploi du temps',
-        fields: (_) => [Field(year, 'AnnÃ©e universitaire', hint: '2025-2026'), Field(sem, 'Semestre', hint: 'S1')],
+        fields: (_) => [Field(year, 'Année universitaire', hint: '2025-2026'), Field(sem, 'Semestre', hint: 'S1')],
         submit: () => api.post('/api/admin/timetables', body: {'academicYear': year.text.trim(), 'semester': sem.text.trim()}));
     if (ok == true) refresh();
   }
@@ -98,7 +98,7 @@ class _AdminWeekViewState extends State<_AdminWeekView> {
           child: DropdownButtonFormField<int?>(
             value: classId,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Classe', isDense: true),
+            decoration: InputDecoration(labelText: tr('Classe'), isDense: true),
             items: [const DropdownMenuItem<int?>(value: null, child: Text('Toutes les classes')), for (final c in classes) DropdownMenuItem<int?>(value: asInt(c['id']), child: Text('${c['name']}'))],
             onChanged: (v) => setState(() => classId = v),
           ),
@@ -123,8 +123,8 @@ class _TimetableSessionsPageState extends State<TimetableSessionsPage> {
   Widget build(BuildContext context) {
     final api = apiOf(context);
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.timetable['academicYear']} Â· ${widget.timetable['semester']}')),
-      floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(context, null), icon: const Icon(Icons.add), label: const Text('SÃ©ance')),
+      appBar: AppBar(title: Text('${widget.timetable['academicYear']} · ${widget.timetable['semester']}')),
+      floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(context, null), icon: const Icon(Icons.add), label: const Text('Séance')),
       body: AsyncBody<List<SessionItem>>(
         key: k,
         load: () async => listOf(await api.get('/api/admin/timetables/$id/sessions'), SessionItem.fromJson),
@@ -134,17 +134,17 @@ class _TimetableSessionsPageState extends State<TimetableSessionsPage> {
             return d != 0 ? d : a.startTime.compareTo(b.startTime);
           });
           return PageList([
-            if (items.isEmpty) const EmptyState('Aucune sÃ©ance'),
+            if (items.isEmpty) const EmptyState('Aucune séance'),
             for (final s in items)
               ListTileCard(
-                title: Text('${dayFr[s.dayOfWeek] ?? s.dayOfWeek} ${hhmm(s.startTime)}â€“${hhmm(s.endTime)}'),
-                subtitle: Text('${s.subjectName ?? ''} Â· ${s.className ?? ''}\n${s.professorName ?? ''}${(s.room ?? '').isNotEmpty ? ' Â· Salle ${s.room}' : ''}'),
+                title: Text('${dayFr[s.dayOfWeek] ?? s.dayOfWeek} ${hhmm(s.startTime)}–${hhmm(s.endTime)}'),
+                subtitle: Text('${s.subjectName ?? ''} · ${s.className ?? ''}\n${s.professorName ?? ''}${(s.room ?? '').isNotEmpty ? ' · Salle ${s.room}' : ''}'),
                 trailing: PopupMenuButton<String>(
                   onSelected: (v) async {
                     if (v == 'edit') {
                       _edit(context, s);
                     } else {
-                      if (!await confirmDialog(context, 'Supprimer la sÃ©ance', 'Supprimer cette sÃ©ance ?', danger: true, ok: 'Supprimer')) return;
+                      if (!await confirmDialog(context, 'Supprimer la séance', 'Supprimer cette séance ?', danger: true, ok: 'Supprimer')) return;
                       try {
                         await api.delete('/api/admin/sessions/${s.id}');
                         refresh();
@@ -181,18 +181,18 @@ class _TimetableSessionsPageState extends State<TimetableSessionsPage> {
     if (!context.mounted) return;
     final ok = await showFormSheet(
       context,
-      title: s == null ? 'Nouvelle sÃ©ance' : 'Modifier la sÃ©ance',
+      title: s == null ? 'Nouvelle séance' : 'Modifier la séance',
       fields: (set) => [
         Dropdown<String>(label: 'Jour', value: day, items: [for (final d in dayOrder) DropdownMenuItem(value: d, child: Text(dayFr[d]!))], onChanged: (v) => set(() => day = v ?? day)),
         Row(children: [
-          Expanded(child: OutlinedButton(onPressed: () async { final t = await pickTime(context, initial: start); if (t != null) set(() => start = t); }, child: Text('DÃ©but ${hhmmOf(start).substring(0, 5)}'))),
+          Expanded(child: OutlinedButton(onPressed: () async { final t = await pickTime(context, initial: start); if (t != null) set(() => start = t); }, child: Text('Début ${hhmmOf(start).substring(0, 5)}'))),
           const SizedBox(width: 8),
           Expanded(child: OutlinedButton(onPressed: () async { final t = await pickTime(context, initial: end); if (t != null) set(() => end = t); }, child: Text('Fin ${hhmmOf(end).substring(0, 5)}'))),
         ]),
         const SizedBox(height: 12),
         Field(room, 'Salle'),
         Dropdown<int>(label: 'Classe', value: classId, items: [for (final c in classes) DropdownMenuItem(value: asInt(c['id']), child: Text('${c['name']}'))], onChanged: (v) => set(() => classId = v)),
-        Dropdown<int>(label: 'MatiÃ¨re', value: subjectId, items: [for (final c in subjects) DropdownMenuItem(value: asInt(c['id']), child: Text('${c['name']}'))], onChanged: (v) => set(() => subjectId = v)),
+        Dropdown<int>(label: 'Matière', value: subjectId, items: [for (final c in subjects) DropdownMenuItem(value: asInt(c['id']), child: Text('${c['name']}'))], onChanged: (v) => set(() => subjectId = v)),
         Dropdown<int>(label: 'Professeur', value: profId, items: [for (final c in profs) DropdownMenuItem(value: asInt(c['id']), child: Text('${c['firstName']} ${c['lastName']}'))], onChanged: (v) => set(() => profId = v)),
       ],
       submit: () async {
@@ -310,7 +310,7 @@ class _TimetableImportPageState extends State<TimetableImportPage> {
   Future<void> _confirm() async {
     final rows = maps(job!['rows']).where((r) => include[asInt(r['id'])] == true && r['classId'] != null && r['subjectId'] != null && r['professorId'] != null).toList();
     if (rows.isEmpty) {
-      setState(() => error = 'Aucune ligne complÃ¨te sÃ©lectionnÃ©e.');
+      setState(() => error = 'Aucune ligne complète sélectionnée.');
       return;
     }
     final tt = timetables.firstWhere((t) => asInt(t['id']) == timetableId);
@@ -326,7 +326,7 @@ class _TimetableImportPageState extends State<TimetableImportPage> {
         ],
       }) as Map);
       if (mounted) {
-        toast(context, '${r['created']} sÃ©ance(s) crÃ©Ã©e(s), ${r['failed']} Ã©chec(s).');
+        toast(context, '${r['created']} séance(s) créée(s), ${r['failed']} échec(s).');
         Navigator.pop(context);
       }
     } catch (e) {
@@ -346,8 +346,8 @@ class _TimetableImportPageState extends State<TimetableImportPage> {
         if (job == null) ...[
           Panel(
             child: Column(children: [
-              Dropdown<int>(label: 'Emploi du temps cible', value: timetableId, items: [for (final t in timetables) DropdownMenuItem(value: asInt(t['id']), child: Text('${t['academicYear']} Â· ${t['semester']}'))], onChanged: (v) => setState(() => timetableId = v)),
-              Dropdown<int?>(label: 'Classe (facultatif)', value: classId, items: [const DropdownMenuItem<int?>(value: null, child: Text('DÃ©tection automatique')), for (final c in classes) DropdownMenuItem<int?>(value: asInt(c['id']), child: Text('${c['name']}'))], onChanged: (v) => setState(() => classId = v)),
+              Dropdown<int>(label: 'Emploi du temps cible', value: timetableId, items: [for (final t in timetables) DropdownMenuItem(value: asInt(t['id']), child: Text('${t['academicYear']} · ${t['semester']}'))], onChanged: (v) => setState(() => timetableId = v)),
+              Dropdown<int?>(label: 'Classe (facultatif)', value: classId, items: [const DropdownMenuItem<int?>(value: null, child: Text('Détection automatique')), for (final c in classes) DropdownMenuItem<int?>(value: asInt(c['id']), child: Text('${c['name']}'))], onChanged: (v) => setState(() => classId = v)),
               OutlinedButton.icon(
                 onPressed: () async {
                   final r = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: const ['pdf'], withData: true);
@@ -365,31 +365,31 @@ class _TimetableImportPageState extends State<TimetableImportPage> {
             child: Column(children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 12),
-              Text('Analyse en coursâ€¦ page ${asInt(job!['donePages']) ?? 0} / ${asInt(job!['totalPages']) ?? 0}'),
+              Text('Analyse en cours… page ${asInt(job!['donePages']) ?? 0} / ${asInt(job!['totalPages']) ?? 0}'),
             ]),
           )
         else if (job!['status'] == 'FAILED')
-          Panel(child: Text(str(job!['message']) ?? 'L\'analyse a Ã©chouÃ©.', style: const TextStyle(color: EduColors.red)))
+          Panel(child: Text(str(job!['message']) ?? 'L\'analyse a échoué.', style: const TextStyle(color: EduColors.red)))
         else ...[
           if ((str(job!['message']) ?? '').isNotEmpty) Panel(child: Text(str(job!['message'])!)),
-          for (final w in (job!['warnings'] as List? ?? const [])) Text('âš  $w', style: const TextStyle(color: EduColors.orange)),
+          for (final w in (job!['warnings'] as List? ?? const [])) Text('⚠ $w', style: const TextStyle(color: EduColors.orange)),
           for (final r in maps(job!['rows']))
             Panel(
               child: CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 value: include[asInt(r['id'])] ?? false,
                 onChanged: (r['classId'] == null || r['subjectId'] == null || r['professorId'] == null) ? null : (v) => setState(() => include[asInt(r['id'])!] = v ?? false),
-                title: Text('${str(r['day'])} ${str(r['start'])}â€“${str(r['end'])} Â· ${str(r['subjectName']) ?? str(r['rawSubject']) ?? ''}'),
+                title: Text('${str(r['day'])} ${str(r['start'])}–${str(r['end'])} · ${str(r['subjectName']) ?? str(r['rawSubject']) ?? ''}'),
                 subtitle: Text([
-                  'Classe : ${str(r['className']) ?? 'âš  ${str(r['rawClass']) ?? '?'}'}',
-                  'Prof : ${str(r['professorName']) ?? 'âš  ${str(r['rawProfessor']) ?? '?'}'}',
+                  'Classe : ${str(r['className']) ?? '⚠ ${str(r['rawClass']) ?? '?'}'}',
+                  'Prof : ${str(r['professorName']) ?? '⚠ ${str(r['rawProfessor']) ?? '?'}'}',
                   if ((str(r['room']) ?? '').isNotEmpty) 'Salle ${r['room']}',
                   if ((str(r['conflict']) ?? '').isNotEmpty) 'Conflit : ${r['conflict']}',
                   for (final i in (r['issues'] as List? ?? const [])) '$i',
                 ].join('\n')),
               ),
             ),
-          if (maps(job!['rows']).isNotEmpty) FilledButton(onPressed: busy ? null : _confirm, child: const Text('CrÃ©er les sÃ©ances sÃ©lectionnÃ©es')),
+          if (maps(job!['rows']).isNotEmpty) FilledButton(onPressed: busy ? null : _confirm, child: const Text('Créer les séances sélectionnées')),
         ],
         if (error != null) Text(error!, style: const TextStyle(color: EduColors.red, fontWeight: FontWeight.w600)),
       ]),
@@ -429,8 +429,8 @@ class _AdminGradesPageState extends State<AdminGradesPage> {
           child: DropdownButtonFormField<int?>(
             value: subjectId,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'MatiÃ¨re', isDense: true),
-            items: [const DropdownMenuItem<int?>(value: null, child: Text('Toutes les matiÃ¨res')), for (final s in subjects) DropdownMenuItem<int?>(value: asInt(s['id']), child: Text('${s['name']}'))],
+            decoration: InputDecoration(labelText: tr('Matière'), isDense: true),
+            items: [const DropdownMenuItem<int?>(value: null, child: Text('Toutes les matières')), for (final s in subjects) DropdownMenuItem<int?>(value: asInt(s['id']), child: Text('${s['name']}'))],
             onChanged: (v) => setState(() {
               subjectId = v;
               k = UniqueKey();
@@ -446,7 +446,7 @@ class _AdminGradesPageState extends State<AdminGradesPage> {
               for (final g in items)
                 ListTileCard(
                   title: Text(g.studentName ?? ''),
-                  subtitle: Text('${g.subjectName ?? ''} Â· ${gradeTypeFr[g.evaluationType] ?? g.evaluationType ?? ''} Â· ${fmtDate(g.date)}'),
+                  subtitle: Text('${g.subjectName ?? ''} · ${gradeTypeFr[g.evaluationType] ?? g.evaluationType ?? ''} · ${fmtDate(g.date)}'),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     Text(num1(g.value), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: (g.value ?? 0) >= 10 ? EduColors.emerald : EduColors.red)),
                     PopupMenuButton<String>(
@@ -483,7 +483,7 @@ class _AdminGradesPageState extends State<AdminGradesPage> {
     DateTime date = g?.date ?? DateTime.now();
     final value = TextEditingController(text: g?.value?.toString() ?? '');
     if (g == null && subjects.isEmpty) {
-      toast(context, 'Aucune matiÃ¨re disponible.', error: true);
+      toast(context, 'Aucune matière disponible.', error: true);
       return;
     }
     Future<void> loadRoster(StateSetter set) async {
@@ -506,7 +506,7 @@ class _AdminGradesPageState extends State<AdminGradesPage> {
         return [
           if (g == null) ...[
             Dropdown<int>(
-              label: 'MatiÃ¨re',
+              label: 'Matière',
               value: sId,
               items: [for (final s in subjects) DropdownMenuItem(value: asInt(s['id']), child: Text('${s['name']}'))],
               onChanged: (v) {
@@ -519,15 +519,15 @@ class _AdminGradesPageState extends State<AdminGradesPage> {
               },
             ),
             Dropdown<int>(
-              label: 'Ã‰tudiant',
+              label: 'Étudiant',
               value: stId,
               items: [for (final r in roster) DropdownMenuItem(value: asInt(r['studentId']), child: Text('${r['studentName']} (${str(r['studentNumber']) ?? ''})', overflow: TextOverflow.ellipsis))],
               onChanged: (v) => set(() => stId = v),
             ),
           ] else
-            Padding(padding: const EdgeInsets.only(bottom: 12), child: Text('${g.studentName} Â· ${g.subjectName}', style: const TextStyle(fontWeight: FontWeight.w700))),
-          Field(value, 'Note (0 â€“ 20)', keyboard: const TextInputType.numberWithOptions(decimal: true)),
-          Dropdown<String>(label: 'Type d\'Ã©valuation', value: type, items: [for (final e in gradeTypeFr.entries) DropdownMenuItem(value: e.key, child: Text(e.value))], onChanged: (v) => set(() => type = v ?? type)),
+            Padding(padding: const EdgeInsets.only(bottom: 12), child: Text('${g.studentName} · ${g.subjectName}', style: const TextStyle(fontWeight: FontWeight.w700))),
+          Field(value, 'Note (0 – 20)', keyboard: const TextInputType.numberWithOptions(decimal: true)),
+          Dropdown<String>(label: 'Type d\'évaluation', value: type, items: [for (final e in gradeTypeFr.entries) DropdownMenuItem(value: e.key, child: Text(e.value))], onChanged: (v) => set(() => type = v ?? type)),
           OutlinedButton.icon(
             onPressed: () async {
               final d = await pickDate(context, initial: date);
@@ -572,7 +572,7 @@ class _AdminAnnouncementsPageState extends State<AdminAnnouncementsPage> {
         key: k,
         load: () async => listOf(await api.get('/api/admin/announcements'), Announcement.fromJson),
         builder: (context, items, reload) => PageList([
-          if (items.isEmpty) const EmptyState('Aucune annonce publiÃ©e', icon: Icons.campaign_outlined),
+          if (items.isEmpty) const EmptyState('Aucune annonce publiée', icon: Icons.campaign_outlined),
           for (final a in items) AnnouncementCard(a, showAudience: true),
         ]),
       ),
@@ -612,7 +612,7 @@ class _AdminAnnouncementsPageState extends State<AdminAnnouncementsPage> {
                   if (r == null) return;
                   for (final f in r.files) {
                     if (f.size > 10 * 1024 * 1024) {
-                      if (context.mounted) toast(context, 'Â« ${f.name} Â» dÃ©passe 10 Mo.', error: true);
+                      if (context.mounted) toast(context, '« ${f.name} » dépasse 10 Mo.', error: true);
                     } else if (files.length < 5 && f.bytes != null) {
                       files.add(f);
                     }
@@ -662,14 +662,14 @@ class _AdminKnowledgePageState extends State<AdminKnowledgePage> {
         key: k,
         load: () async => maps(await api.get('/api/admin/knowledge')),
         builder: (context, items, reload) => PageList([
-          const Text('Documents utilisÃ©s par l\'assistant IA pour rÃ©pondre aux questions sur l\'Ã©tablissement.'),
+          const Text('Documents utilisés par l\'assistant IA pour répondre aux questions sur l\'établissement.'),
           if (items.isEmpty) const EmptyState('Aucun document', icon: Icons.psychology_outlined),
           for (final d in items)
             Panel(
               title: str(d['title']) ?? '',
               trailing: Badge2(str(d['status']) ?? '', color: d['status'] == 'INDEXED' ? EduColors.emerald : (d['status'] == 'FAILED' ? EduColors.red : EduColors.orange)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${str(d['sourceKind']) == 'LINK' ? 'Lien' : str(d['type']) ?? ''} Â· ${d['chunkCount']} extraits Â· ${fmtSize(asInt(d['size']))}\n${str(d['uploadedBy']) ?? ''} Â· ${fmtDateTime(asDate(d['uploadedAt']))}',
+                Text('${str(d['sourceKind']) == 'LINK' ? 'Lien' : str(d['type']) ?? ''} · ${d['chunkCount']} extraits · ${fmtSize(asInt(d['size']))}\n${str(d['uploadedBy']) ?? ''} · ${fmtDateTime(asDate(d['uploadedAt']))}',
                     style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor)),
                 if ((str(d['url']) ?? '').isNotEmpty) Text(str(d['url'])!, style: const TextStyle(fontSize: 12.5, color: EduColors.primary)),
                 if ((str(d['lastError']) ?? '').isNotEmpty) Text(str(d['lastError'])!, style: const TextStyle(fontSize: 12.5, color: EduColors.red)),
@@ -685,11 +685,11 @@ class _AdminKnowledgePageState extends State<AdminKnowledgePage> {
                       }
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('RÃ©indexer'),
+                    label: const Text('Réindexer'),
                   ),
                   OutlinedButton.icon(
                     onPressed: () async {
-                      if (!await confirmDialog(context, 'Supprimer', 'Supprimer Â« ${d['title']} Â» ?', danger: true, ok: 'Supprimer')) return;
+                      if (!await confirmDialog(context, 'Supprimer', 'Supprimer « ${d['title']} » ?', danger: true, ok: 'Supprimer')) return;
                       try {
                         await api.delete('/api/admin/knowledge/${d['id']}');
                         refresh();
@@ -718,7 +718,7 @@ class _AdminKnowledgePageState extends State<AdminKnowledgePage> {
     final ok = await showFormSheet(
       context,
       title: 'Ajouter un document',
-      action: 'TÃ©lÃ©verser',
+      action: 'Téléverser',
       fields: (_) => [Text(f.name), const SizedBox(height: 10), Field(t, 'Titre')],
       submit: () => api.multipart('/api/admin/knowledge', fields: {'title': t.text.trim()}, files: [UploadFile('file', f.name, f.bytes!)]),
     );
@@ -733,7 +733,7 @@ class _AdminKnowledgePageState extends State<AdminKnowledgePage> {
       context,
       title: 'Ajouter un lien',
       action: 'Ajouter',
-      fields: (_) => [Field(t, 'Titre (facultatif)'), Field(u, 'Adresse (https://â€¦)', keyboard: TextInputType.url)],
+      fields: (_) => [Field(t, 'Titre (facultatif)'), Field(u, 'Adresse (https://…)', keyboard: TextInputType.url)],
       submit: () => api.post('/api/admin/knowledge/link', body: {'title': t.text.trim(), 'url': u.text.trim()}),
     );
     if (ok == true) refresh();
@@ -782,10 +782,10 @@ class _AdminRequestsPageState extends State<AdminRequestsPage> {
                   title: r.type,
                   trailing: Badge2(requestStatusFr[r.status] ?? r.status, color: statusColor(r.status)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('${r.requesterName ?? ''} (${r.requesterRole == 'ROLE_PROFESSOR' ? 'Professeur' : 'Ã‰tudiant'}) Â· ${r.requesterEmail ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                    Text('${r.copies} exemplaire(s) Â· ${fmtDate(r.createdAt)}', style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor)),
+                    Text('${r.requesterName ?? ''} (${r.requesterRole == 'ROLE_PROFESSOR' ? 'Professeur' : 'Étudiant'}) · ${r.requesterEmail ?? ''}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text('${r.copies} exemplaire(s) · ${fmtDate(r.createdAt)}', style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor)),
                     if ((r.reason ?? '').isNotEmpty) Text('Motif : ${r.reason}'),
-                    if ((r.details ?? '').isNotEmpty) Text('DÃ©tails : ${r.details}'),
+                    if ((r.details ?? '').isNotEmpty) Text('Détails : ${r.details}'),
                     if ((r.adminNote ?? '').isNotEmpty) Text('Note : ${r.adminNote} (${r.handledBy ?? ''})'),
                     const SizedBox(height: 8),
                     Wrap(spacing: 8, children: [
@@ -854,7 +854,7 @@ class RequestTypesPage extends StatefulWidget {
 class _RequestTypesPageState extends State<RequestTypesPage> {
   Key k = UniqueKey();
   void refresh() => setState(() => k = UniqueKey());
-  static const aud = {'STUDENT': 'Ã‰tudiants', 'PROFESSOR': 'Professeurs', 'BOTH': 'Tous'};
+  static const aud = {'STUDENT': 'Étudiants', 'PROFESSOR': 'Professeurs', 'BOTH': 'Tous'};
 
   @override
   Widget build(BuildContext context) {
@@ -870,7 +870,7 @@ class _RequestTypesPageState extends State<RequestTypesPage> {
           for (final t in items)
             ListTileCard(
               title: Text('${t['name']}'),
-              subtitle: Text('${aud[t['audience']] ?? t['audience']} Â· max ${t['maxCopies']} ex.${t['requiresDetails'] == true ? ' Â· dÃ©tails requis' : ''}'),
+              subtitle: Text('${aud[t['audience']] ?? t['audience']} · max ${t['maxCopies']} ex.${t['requiresDetails'] == true ? ' · détails requis' : ''}'),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 Badge2(t['active'] == true ? 'Actif' : 'Inactif', color: t['active'] == true ? EduColors.emerald : EduColors.slate500),
                 PopupMenuButton<String>(
@@ -911,7 +911,7 @@ class _RequestTypesPageState extends State<RequestTypesPage> {
         Dropdown<String>(label: 'Destinataires', value: aud.containsKey(audience) ? audience : 'BOTH', items: [for (final e in aud.entries) DropdownMenuItem(value: e.key, child: Text(e.value))], onChanged: (v) => set(() => audience = v ?? audience)),
         Field(copies, 'Nombre maximum d\'exemplaires', keyboard: TextInputType.number),
         SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Actif'), value: active, onChanged: (v) => set(() => active = v)),
-        SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('DÃ©tails obligatoires'), value: details, onChanged: (v) => set(() => details = v)),
+        SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Détails obligatoires'), value: details, onChanged: (v) => set(() => details = v)),
       ],
       submit: () async {
         final body = {'name': name.text.trim(), 'audience': audience, 'active': active, 'requiresDetails': details, 'maxCopies': int.tryParse(copies.text.trim()) ?? 1};
@@ -959,7 +959,7 @@ class _AdminAbsencesPageState extends State<AdminAbsencesPage> {
               child: DropdownButtonFormField<int?>(
                 value: classId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Classe', isDense: true),
+                decoration: InputDecoration(labelText: tr('Classe'), isDense: true),
                 items: [const DropdownMenuItem<int?>(value: null, child: Text('Toutes')), for (final c in classes) DropdownMenuItem<int?>(value: asInt(c['id']), child: Text('${c['name']}', overflow: TextOverflow.ellipsis))],
                 onChanged: (v) => setState(() => classId = v),
               ),
@@ -969,7 +969,7 @@ class _AdminAbsencesPageState extends State<AdminAbsencesPage> {
               child: DropdownButtonFormField<int?>(
                 value: professorId,
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Professeur', isDense: true),
+                decoration: InputDecoration(labelText: tr('Professeur'), isDense: true),
                 items: [const DropdownMenuItem<int?>(value: null, child: Text('Tous')), for (final p in profs) DropdownMenuItem<int?>(value: asInt(p['id']), child: Text('${p['firstName']} ${p['lastName']}', overflow: TextOverflow.ellipsis))],
                 onChanged: (v) => setState(() => professorId = v),
               ),

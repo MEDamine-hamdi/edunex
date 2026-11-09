@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
 import '../../core/theme/app_theme.dart';
@@ -8,7 +8,7 @@ const notifTypeFr = {
   'NEW_COURSE': 'Nouveau cours',
   'TIMETABLE_CHANGE': 'Emploi du temps',
   'NEW_GRADE': 'Nouvelle note',
-  'ATTENDANCE_UPDATE': 'PrÃ©sence',
+  'ATTENDANCE_UPDATE': 'Présence',
   'ANNOUNCEMENT': 'Annonce',
   'DOCUMENT_REQUEST': 'Demande de document',
 };
@@ -91,7 +91,7 @@ class _Notifs extends StatelessWidget {
               ),
               title: Text(n.message, maxLines: 3, overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: n.read ? FontWeight.w500 : FontWeight.w800)),
-              subtitle: Text('${notifTypeFr[n.type] ?? n.type} Â· ${fmtDateTime(n.sentAt)}'),
+              subtitle: Text('${notifTypeFr[n.type] ?? n.type} · ${fmtDateTime(n.sentAt)}'),
               trailing: n.read ? null : const Icon(Icons.circle, size: 10, color: EduColors.primary),
               onTap: () async {
                 await showDialog<void>(
@@ -147,8 +147,8 @@ class AnnouncementCard extends StatelessWidget {
         Text(a.content, style: const TextStyle(height: 1.45)),
         const SizedBox(height: 8),
         Text(
-          '${a.publishedBy ?? ''}${a.className != null && !showAudience ? ' Â· ${a.className}' : ''} Â· ${fmtDateTime(a.publishedAt)}'
-          '${showAudience && a.recipients != null ? ' Â· ${a.recipients} destinataires' : ''}',
+          '${a.publishedBy ?? ''}${a.className != null && !showAudience ? ' · ${a.className}' : ''} · ${fmtDateTime(a.publishedAt)}'
+          '${showAudience && a.recipients != null ? ' · ${a.recipients} destinataires' : ''}',
           style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
         ),
         if (a.attachments.isNotEmpty) ...[
@@ -157,7 +157,7 @@ class AnnouncementCard extends StatelessWidget {
             for (final f in a.attachments)
               ActionChip(
                 avatar: Icon(f.image ? Icons.image_outlined : Icons.attach_file, size: 18),
-                label: Text('${f.name}${f.size != null ? ' Â· ${fmtSize(f.size)}' : ''}'),
+                label: Text('${f.name}${f.size != null ? ' · ${fmtSize(f.size)}' : ''}'),
                 onPressed: () => openProtectedFile(context, '/api/announcements/${a.id}/attachments/${f.id}', name: f.name),
               ),
           ]),

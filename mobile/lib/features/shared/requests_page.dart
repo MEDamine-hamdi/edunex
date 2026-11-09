@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
 import '../../core/theme/app_theme.dart';
@@ -39,10 +39,10 @@ class _RequestsPageState extends State<RequestsPage> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _Steps(r.status),
                   const SizedBox(height: 10),
-                  Text('${r.copies} exemplaire(s) Â· dÃ©posÃ©e le ${fmtDate(r.createdAt)}',
+                  Text('${r.copies} exemplaire(s) · déposée le ${fmtDate(r.createdAt)}',
                       style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor)),
                   if ((r.reason ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text('Motif : ${r.reason}')),
-                  if ((r.details ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Text('DÃ©tails : ${r.details}')),
+                  if ((r.details ?? '').isNotEmpty) Padding(padding: const EdgeInsets.only(top: 4), child: Text('Détails : ${r.details}')),
                   if ((r.adminNote ?? '').isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 8),
@@ -57,7 +57,7 @@ class _RequestsPageState extends State<RequestsPage> {
                         style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
                         onPressed: () => openProtectedFile(context, '/api/requests/${r.id}/file', name: r.fileName ?? 'document'),
                         icon: const Icon(Icons.download),
-                        label: Text(r.fileName ?? 'TÃ©lÃ©charger'),
+                        label: Text(r.fileName ?? 'Télécharger'),
                       ),
                     if (r.status == 'FILED')
                       OutlinedButton.icon(
@@ -103,7 +103,7 @@ class _RequestsPageState extends State<RequestsPage> {
     final ok = await showFormSheet(
       context,
       title: 'Nouvelle demande',
-      action: 'DÃ©poser la demande',
+      action: 'Déposer la demande',
       fields: (set) {
         final max = asInt(type?['maxCopies']) ?? 1;
         if (copies > max) copies = max;
@@ -121,7 +121,7 @@ class _RequestsPageState extends State<RequestsPage> {
             IconButton(onPressed: copies < max ? () => set(() => copies++) : null, icon: const Icon(Icons.add_circle_outline)),
           ]),
           Field(reason, 'Motif', maxLines: 2),
-          Field(details, type?['requiresDetails'] == true ? 'DÃ©tails (obligatoire)' : 'DÃ©tails (facultatif)', maxLines: 3),
+          Field(details, type?['requiresDetails'] == true ? 'Détails (obligatoire)' : 'Détails (facultatif)', maxLines: 3),
         ];
       },
       submit: () => api.post('/api/requests', body: {
