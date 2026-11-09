@@ -8,6 +8,7 @@ const nav: NavItem[] = [
   { href: "/platform/agents", label: "Agents d'administration" },
   { href: "/platform/roles", label: "Rôles" },
   { href: "/platform/permissions", label: "Permissions" },
+  { href: "/platform/user-rights", label: "Droits par personne" },
   { href: "/platform/settings", label: "Paramètres" },
   { href: "/platform/mail", label: "E-mails" },
   { href: "/platform/logs", label: "Journal d'activité" },

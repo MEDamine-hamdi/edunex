@@ -24,7 +24,7 @@ export type Me = {
   status: string;
 };
 
-export type NavItem = { href: string; label: string; soon?: boolean; exact?: boolean };
+export type NavItem = { href: string; label: string; soon?: boolean; exact?: boolean; requires?: string };
 
 const MeContext = createContext<Me | null>(null);
 
@@ -50,6 +50,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
   const [me, setMe] = useState<Me | null>(cachedMe?.role === allowedRole ? cachedMe : null);
+  const [perms, setPerms] = useState<string[]>([]);
 
   useEffect(() => {
     apiFetch<Me>("/api/users/me")
@@ -68,6 +69,11 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
       .catch(() => {});
   }, [allowedRole, router]);
 
+  // extra rights given to this person make some menu entries appear
+  useEffect(() => {
+    apiFetch<string[]>("/api/users/me/permissions").then(setPerms).catch(() => {});
+  }, []);
+
   // a new page starts at the top of the content area
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
@@ -80,6 +86,8 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
   }
 
   if (!me) return <LoadingScreen />;
+
+  const visibleNav = nav.filter((i) => !i.requires || perms.includes(i.requires));
 
   const isActive = (item: NavItem) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -120,7 +128,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
 
         {/* Mobile menu */}
         <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 md:hidden">
-          {nav.filter((i) => !i.soon).map((item) => (
+          {visibleNav.filter((i) => !i.soon).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -137,7 +145,7 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
           {/* Sidebar: fixed, with its own scroll when it is too long */}
           <nav className="hidden w-64 shrink-0 overflow-y-auto overscroll-contain border-r border-slate-200 bg-white p-4 md:block">
             <ul className="space-y-1">
-              {nav.map((item) => (
+              {visibleNav.map((item) => (
                 <li key={item.label}>
                   {item.soon ? (
                     <span className="flex cursor-not-allowed items-center justify-between rounded-xl px-4 py-3 text-sm text-slate-400">
