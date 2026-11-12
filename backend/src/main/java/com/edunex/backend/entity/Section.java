@@ -10,7 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Section {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Section extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -12,6 +12,7 @@ const nav: NavItem[] = [
   { href: "/admin/enrollments", label: "Inscriptions" },
   { href: "/admin/timetables", label: "Emplois du temps" },
   { href: "/admin/grades", label: "Notes" },
+  { href: "/admin/agents", label: "Administrateurs" },
   { href: "/admin/announcements", label: "Annonces" },
   { href: "/admin/exams", label: "Examens et surveillance" },
   { href: "/admin/elimination", label: "Éliminations" },

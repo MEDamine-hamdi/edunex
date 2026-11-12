@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Internship {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Internship extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

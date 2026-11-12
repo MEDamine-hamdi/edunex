@@ -13,7 +13,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Subject {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Subject extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

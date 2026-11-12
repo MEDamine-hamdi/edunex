@@ -15,7 +15,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Defense {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Defense extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

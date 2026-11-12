@@ -31,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final com.edunex.backend.tenant.TenantAccess tenantAccess;
     private final UserRightsService userRights;
     private final TokenRevocationService tokenRevocation;
 
@@ -70,7 +71,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     userDetails, null, userRights.effective(userDetails));
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    if (tenantAccess.allows(email)) {
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        com.edunex.backend.tenant.TenantContext.set(tenantAccess.universityOf(email));
+                    }
 
                     boolean mustChange = userDetails.getAuthorities().stream()
                             .anyMatch(a -> MUST_CHANGE.equals(a.getAuthority()));
@@ -89,6 +93,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            com.edunex.backend.tenant.TenantContext.clear();
+        }
     }
 }

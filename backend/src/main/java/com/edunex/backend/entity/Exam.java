@@ -16,7 +16,8 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Exam {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Exam extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,6 +5,7 @@ import { NavItem, RoleShell } from "./RoleShell";
 
 const nav: NavItem[] = [
   { href: "/platform/dashboard", label: "Tableau de bord", exact: true },
+  { href: "/platform/universities", label: "Universités" },
   { href: "/platform/agents", label: "Agents d'administration" },
   { href: "/platform/roles", label: "Rôles" },
   { href: "/platform/permissions", label: "Permissions" },

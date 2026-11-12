@@ -13,7 +13,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Attendance {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class Attendance extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

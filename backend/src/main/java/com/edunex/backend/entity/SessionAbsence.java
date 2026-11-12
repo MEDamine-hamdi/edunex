@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SessionAbsence {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class SessionAbsence extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

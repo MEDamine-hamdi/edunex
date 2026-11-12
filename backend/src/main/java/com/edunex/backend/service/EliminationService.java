@@ -70,7 +70,7 @@ public class EliminationService {
     }
 
     private Optional<AbsencePolicy> policyFor(Long subjectId) {
-        return policies.findBySubjectId(subjectId).or(() -> policies.findBySubjectIdIsNull()).filter(p -> p.getMaxAbsences() > 0);
+        return policies.findBySubjectId(subjectId).or(() -> policies.defaultsFor(com.edunex.backend.tenant.TenantContext.currentOrZero()).stream().findFirst()).filter(p -> p.getMaxAbsences() > 0);
     }
 
     // ---------- the check ----------
@@ -87,7 +87,7 @@ public class EliminationService {
     @Transactional
     public void recomputeAll() {
         for (Subject s : subjectRepository.findAll()) {
-            recompute(s);
+            com.edunex.backend.tenant.TenantContext.run(s.getUniversityId(), () -> recompute(s));
         }
     }
 

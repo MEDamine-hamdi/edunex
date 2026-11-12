@@ -13,7 +13,8 @@ import java.time.LocalTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TimetableSession {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class TimetableSession extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

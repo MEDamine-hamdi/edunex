@@ -11,7 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ClassTeaching {
+@org.hibernate.annotations.Filter(name = "tenantFilter")
+public class ClassTeaching extends com.edunex.backend.tenant.TenantOwned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
