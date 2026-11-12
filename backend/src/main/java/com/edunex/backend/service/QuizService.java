@@ -68,8 +68,6 @@ public class QuizService {
     private final CourseCompletionRepository completions;
     private final Map<Long, Deque<Long>> generationLog = new ConcurrentHashMap<>();
 
-    // ---------- course status ----------
-
     @Transactional(readOnly = true)
     public QuizDto.Info info(String email, Long courseId) {
         Long studentId = studentId(email);
@@ -102,8 +100,6 @@ public class QuizService {
                 .map(a -> new QuizDto.AttemptRow(a.getId(), a.getCreatedAt(), a.getScore(), a.getTotal(), a.getSubmittedAt() != null))
                 .toList();
     }
-
-    // ---------- generation ----------
 
     @Transactional
     public QuizDto.QuizView generate(String email, Long courseId) {
@@ -222,8 +218,6 @@ public class QuizService {
         return out.size() > WANTED ? new ArrayList<>(out.subList(0, WANTED)) : out;
     }
 
-    // ---------- answering ----------
-
     @Transactional(readOnly = true)
     public QuizDto.QuizState state(String email, Long quizId) {
         QuizAttempt a = own(email, quizId);
@@ -261,8 +255,6 @@ public class QuizService {
         String title = courseRepository.findById(a.getCourseId()).map(Course::getTitle).orElse("");
         return result(a, title);
     }
-
-    // ---------- helpers ----------
 
     private QuizDto.QuizView view(QuizAttempt a, String courseTitle) {
         List<QuizDto.QuestionView> list = new ArrayList<>();

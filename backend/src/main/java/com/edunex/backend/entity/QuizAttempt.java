@@ -7,7 +7,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-/** One generated quiz of a student for a course. The correct answers stay on the server until the quiz is submitted. */
 @Entity
 @Table(name = "quiz_attempts", indexes = @Index(name = "idx_quiz_student_course", columnList = "student_id, course_id"))
 @Getter

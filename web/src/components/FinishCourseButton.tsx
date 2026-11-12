@@ -6,7 +6,6 @@ import { apiFetch } from "@/lib/api";
 
 type Info = { completed: boolean; lastScore: number | null; lastTotal: number | null };
 
-/** "Cours terminé": leads to the quiz page of the course. */
 export function FinishCourseButton({ courseId }: { courseId: number }) {
   const [info, setInfo] = useState<Info | null>(null);
 

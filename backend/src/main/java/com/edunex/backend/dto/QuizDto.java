@@ -35,7 +35,6 @@ public final class QuizDto {
     public record AttemptRow(Long id, LocalDateTime createdAt, Integer score, int total, boolean submitted) {
     }
 
-    /** Exactly one of the two is filled: the quiz to answer, or the result of a submitted quiz. */
     public record QuizState(QuizView quiz, QuizResult result) {
     }
 }

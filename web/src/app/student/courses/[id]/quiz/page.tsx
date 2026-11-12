@@ -104,11 +104,9 @@ export default function CourseQuizPage() {
     }
   }
 
-  const title = info?.title ?? "Quiz";
-
   return (
     <StudentShell>
-      <PageHeader title={`Quiz : ${title}`} subtitle="Des questions générées par l'IA à partir des documents du cours, pour vérifier que vous avez bien compris." />
+      <PageHeader title={`Quiz : ${info?.title ?? ""}`} subtitle="Des questions générées par l'IA à partir des documents du cours, pour vérifier que vous avez bien compris." />
       <ErrorBox message={error} />
 
       {busy && !quiz && !result && (
