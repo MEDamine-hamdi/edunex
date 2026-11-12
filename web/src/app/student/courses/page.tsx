@@ -1,5 +1,6 @@
 "use client";
 
+import { FinishCourseButton } from "@/components/FinishCourseButton";
 import { SectionLoader } from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { AssistantChat, ChatScope } from "@/components/AssistantChat";
@@ -89,6 +90,7 @@ export default function StudentCoursesPage() {
               </button>
             </div>
             <h2 className="mt-3 text-lg font-semibold">{c.title}</h2>
+              <FinishCourseButton courseId={c.id} />
             {c.description && <p className="mt-1 text-sm text-slate-600">{c.description}</p>}
             <p className="mt-2 text-xs text-slate-500">
               {c.professorName} · {formatDate(c.createdAt)}
