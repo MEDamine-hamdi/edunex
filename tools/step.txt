@@ -9,49 +9,91 @@ function W([string]$path, [string]$content) {
   [System.IO.Directory]::CreateDirectory((Split-Path $full)) | Out-Null
   [System.IO.File]::WriteAllText($full, $content, $global:Utf8)
 }
-function Q([string]$path, [string]$old, [string]$new, [string]$marker = "") {
-  [void]$global:Patches.Add([pscustomobject]@{ Path = $path; Old = $old; New = $new; Marker = $marker })
+
+function Q([string]$path, [string]$old, [string]$new, [string]$marker = "", [bool]$optional = $false) {
+  [void]$global:Patches.Add([pscustomobject]@{ Path = $path; Old = $old; New = $new; Marker = $marker; Optional = $optional })
 }
+
 function Apply-Patches {
   foreach ($p in $global:Patches) {
     $full = Join-Path $global:Root $p.Path
-    if (-not (Test-Path -LiteralPath $full)) { throw "file not found: $($p.Path)" }
+    if (-not (Test-Path -LiteralPath $full)) { if ($p.Optional) { continue }; throw "file not found: $($p.Path)" }
     $code = [System.IO.File]::ReadAllText($full)
     if ($p.Marker -ne "" -and $code.Contains($p.Marker)) { continue }
-    if (-not $code.Contains($p.Old)) { throw "text not found in $($p.Path): $($p.Old)" }
+    if (-not $code.Contains($p.Old)) { if ($p.Optional) { continue }; throw "text not found in $($p.Path): $($p.Old)" }
   }
   foreach ($p in $global:Patches) {
     $full = Join-Path $global:Root $p.Path
+    if (-not (Test-Path -LiteralPath $full)) { continue }
     $code = [System.IO.File]::ReadAllText($full)
     if ($p.Marker -ne "" -and $code.Contains($p.Marker)) { continue }
+    if (-not $code.Contains($p.Old)) { continue }
     [System.IO.File]::WriteAllText($full, $code.Replace($p.Old, $p.New), $global:Utf8)
   }
   $global:Patches.Clear()
 }
+
 function Get-TscCount {
   Push-Location (Join-Path $global:Root "web")
-  try { $out = (& cmd /c "npx tsc --noEmit 2>&1") | Out-String; return @(($out -split "`n") | Where-Object { $_ -match "error TS" }).Count }
-  finally { Pop-Location }
+  try {
+    $out = (& cmd /c "npx tsc --noEmit 2>&1") | Out-String
+    return @(($out -split "`n") | Where-Object { $_ -match "error TS" }).Count
+  } finally { Pop-Location }
 }
+
 function Test-Backend {
   Push-Location (Join-Path $global:Root "backend")
   try { & cmd /c ".\mvnw.cmd -q -DskipTests compile"; return ($LASTEXITCODE -eq 0) }
   finally { Pop-Location }
 }
+
+# starts the backend once on a spare port and checks that it really boots (used by the biggest steps only)
+function Test-Boot {
+  $log = Join-Path $env:TEMP "edunex-boot.log"
+  Remove-Item $log, "$log.err" -ErrorAction SilentlyContinue
+  $env:SERVER_PORT = "18099"
+  try {
+    $p = Start-Process -FilePath "cmd.exe" -ArgumentList "/c mvnw.cmd -q -DskipTests spring-boot:run" -WorkingDirectory (Join-Path $global:Root "backend") -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -WindowStyle Hidden
+    $ok = $false
+    $deadline = (Get-Date).AddSeconds(300)
+    while ((Get-Date) -lt $deadline -and -not $p.HasExited) {
+      Start-Sleep -Seconds 3
+      $text = ""
+      try {
+        $fs = [System.IO.File]::Open($log, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+        $sr = New-Object System.IO.StreamReader($fs)
+        $text = $sr.ReadToEnd()
+        $sr.Close()
+      } catch { }
+      if ($text -match "Started \w+ in ") { Start-Sleep -Seconds 15; $ok = (-not $p.HasExited); break }
+    }
+    & taskkill /PID $p.Id /T /F 2>&1 | Out-Null
+    if (-not $ok) {
+      Write-Host "---- last lines of the boot log ----" -ForegroundColor Yellow
+      try { Get-Content $log -Tail 40 } catch { }
+      try { Get-Content "$log.err" -Tail 15 } catch { }
+    }
+    return $ok
+  } finally { Remove-Item Env:SERVER_PORT -ErrorAction SilentlyContinue }
+}
+
 function Start-Step([string]$name) {
   $dirty = git status --porcelain -- backend web
-  if ($dirty) { Write-Host "Unsaved changes found. Paste STEP 0 first." -ForegroundColor Red; return $false }
+  if ($dirty) { Write-Host "Unsaved changes found. Paste STEP 0B first." -ForegroundColor Red; return $false }
   Write-Host "== $name ==" -ForegroundColor Cyan
   return $true
 }
+
 function Undo-Step {
   git checkout HEAD -- backend web 2>$null
   git clean -fd -- backend web | Out-Null
   Write-Host "ROLLED BACK: the project is exactly as it was before this step." -ForegroundColor Yellow
 }
-function Finish-Step([string]$message, [bool]$backend, [bool]$web, [int]$baseTsc) {
-  if ($backend) { if (-not (Test-Backend)) { throw "the backend does not compile (errors above)" } }
+
+function Finish-Step([string]$message, [bool]$backend, [bool]$web, [int]$baseTsc, [bool]$boot = $false) {
+  if ($backend) { if (-not (Test-Backend)) { throw "the backend does not compile (see the errors above)" } }
   if ($web) { $now = Get-TscCount; if ($now -gt $baseTsc) { throw "the web app has $($now - $baseTsc) new TypeScript error(s)" } }
+  if ($boot) { Write-Host "Starting the backend once on a spare port to check that it boots..."; if (-not (Test-Boot)) { throw "the backend does not boot (see the log above)" } }
   git add backend web tools | Out-Null
   git commit -m $message | Out-Null
   Write-Host "DONE and saved locally: $message" -ForegroundColor Green
