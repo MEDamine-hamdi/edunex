@@ -62,28 +62,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _server() async {
-    final auth = context.read<AuthController>();
-    final c = TextEditingController(text: auth.api.baseUrl);
-    await showFormSheet(
-      context,
-      title: 'Adresse du serveur',
-      fields: (_) => [
-        const Text('URL de l\'API EduNex (backend Spring Boot).'),
-        const SizedBox(height: 10),
-        Field(c, 'URL du serveur', keyboard: TextInputType.url, hint: 'https://…'),
-      ],
-      submit: () async {
-        final u = c.text.trim();
-        if (!u.startsWith('http://') && !u.startsWith('https://')) {
-          throw ApiException(0, 'L\'adresse doit commencer par http:// ou https://');
-        }
-        await auth.setBaseUrl(u);
-      },
-    );
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
@@ -119,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         const Text('Connexion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
                         const SizedBox(height: 4),
-                        Text('Accédez à votre espace EduNex',
+                        Text('Accédez à votre espace EduTEK',
                             style: TextStyle(color: Theme.of(context).hintColor)),
                         const SizedBox(height: 20),
                         if (auth.notice != null)
@@ -180,12 +158,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ]),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: _server,
-                    icon: const Icon(Icons.dns_outlined, size: 18),
-                    label: Text('Serveur : ${auth.api.baseUrl}', overflow: TextOverflow.ellipsis),
                   ),
                 ]),
               ),

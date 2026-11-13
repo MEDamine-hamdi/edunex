@@ -13,6 +13,7 @@ import '../admin/admin_pages.dart';
 import '../admin/admin_pages2.dart';
 import '../assistant/assistant_page.dart';
 import '../elimination/elimination_pages.dart';
+import '../exams/exams_pages.dart';
 import '../internships/internships_pages.dart';
 import '../messaging/messaging_pages.dart';
 import '../platform/platform_pages.dart';
@@ -48,6 +49,7 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Mes matières', Icons.category_outlined, () => const StudentSubjectsPage()),
         NavDest('Absences', Icons.event_busy_outlined, () => const StudentAttendancePage()),
         NavDest("Seuil d'absences", Icons.report_gmailerrorred_outlined, () => const StudentEliminationPage()),
+        NavDest('Mes examens', Icons.fact_check_outlined, () => const StudentExamsPage()),
         NavDest('Notes', Icons.grade_outlined, () => const StudentGradesPage()),
         NavDest('Mon stage', Icons.work_outline, () => const InternshipsMinePage()),
         NavDest('Demandes de documents', Icons.description_outlined, () => const RequestsPage()),
@@ -63,6 +65,7 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Mes matières', Icons.category_outlined, () => const ProfessorSubjectsPage()),
         NavDest('Mes classes', Icons.groups_outlined, () => const ProfessorClassesPage()),
         NavDest('Stages et soutenances', Icons.work_outline, () => const InternshipsMinePage()),
+        NavDest('Surveillance des examens', Icons.visibility_outlined, () => const ProfessorExamsPage()),
         NavDest('Saisie des notes', Icons.edit_note_outlined, () => const DelegatedGradesPage(), requires: 'GRADES_MANAGE'),
         NavDest('Gestion des emplois du temps', Icons.edit_calendar_outlined, () => const DelegatedTimetablePage(), requires: 'TIMETABLE_MANAGE'),
         NavDest('Demandes de documents', Icons.description_outlined, () => const RequestsPage()),
@@ -82,6 +85,7 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Inscriptions', Icons.how_to_reg_outlined, () => const AdminEnrollmentsPage()),
         NavDest('Stages et soutenances', Icons.work_outline, () => const AdminInternshipsPage()),
         NavDest('Notes', Icons.grade_outlined, () => const AdminGradesPage()),
+        NavDest('Examens et surveillance', Icons.event_note_outlined, () => const AdminExamsPage(), requires: 'EXAMS_MANAGE'),
         NavDest('Éliminations', Icons.person_remove_outlined, () => const AdminEliminationPage(), requires: 'ELIMINATION_MANAGE'),
         NavDest('Base de connaissances', Icons.psychology_outlined, () => const AdminKnowledgePage()),
         NavDest('Absences des enseignants', Icons.person_off_outlined, () => const AdminAbsencesPage()),

@@ -22,3 +22,16 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+// Force all plugins to compile against SDK 36
+subprojects {
+    val forceSdk = Action<Project> {
+        val android = extensions.findByName("android")
+        if (android != null) {
+            try {
+                android.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType).invoke(android, 36)
+            } catch (e: Exception) { }
+        }
+    }
+    if (state.executed) forceSdk.execute(this) else afterEvaluate(forceSdk)
+}

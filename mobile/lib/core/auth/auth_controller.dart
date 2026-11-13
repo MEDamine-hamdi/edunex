@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/api_client.dart';
 import '../config.dart';
@@ -54,8 +53,7 @@ class AuthController extends ChangeNotifier {
   bool get signedIn => user != null;
 
   Future<void> boot() async {
-    final prefs = await SharedPreferences.getInstance();
-    api.baseUrl = prefs.getString('baseUrl') ?? AppConfig.defaultBaseUrl;
+    api.baseUrl = AppConfig.baseUrl;
     try {
       final token = await _storage.read(key: 'jwt');
       if (token != null) {
@@ -74,15 +72,6 @@ class AuthController extends ChangeNotifier {
       api.token = null;
     }
     booting = false;
-    notifyListeners();
-  }
-
-  Future<void> setBaseUrl(String url) async {
-    var u = url.trim();
-    if (u.endsWith('/')) u = u.substring(0, u.length - 1);
-    api.baseUrl = u;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('baseUrl', u);
     notifyListeners();
   }
 

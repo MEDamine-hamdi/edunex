@@ -45,7 +45,7 @@ class EduNexApp extends StatelessWidget {
     return LangScope(
       code: lang.code,
       child: MaterialApp(
-      title: 'EduNex',
+      title: 'EduTEK',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
