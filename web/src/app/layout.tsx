@@ -1,3 +1,4 @@
+import { TableCards } from "@/components/TableCards";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-slate-900">
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
+        <TableCards />
           <IconEnhancer />
         </ThemeProvider>
       </body>

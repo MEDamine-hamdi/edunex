@@ -339,8 +339,8 @@ export function MessagingApp() {
   const isGroup = (detail?.type ?? active?.type) === "GROUP";
 
   return (
-    <div className="grid h-[calc(100dvh-9rem)] min-h-[28rem] gap-4 lg:grid-cols-[320px_1fr]">
-      <aside className="flex min-h-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="grid h-[calc(100dvh-6.5rem)] min-h-[24rem] gap-4 lg:h-[calc(100dvh-9rem)] lg:min-h-[28rem] lg:grid-cols-[320px_1fr]">
+      <aside className={`flex min-h-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm ${activeId ? "max-lg:hidden" : ""}`}>
         <div className="flex items-center justify-between border-b border-slate-200 p-3">
           <h2 className="font-semibold text-slate-900">Messagerie</h2>
           <button onClick={() => setShowNew(true)} className={primaryBtn}>+ Nouvelle</button>
@@ -368,6 +368,7 @@ export function MessagingApp() {
         ) : (
           <>
             <header className="flex items-center gap-3 border-b border-slate-200 p-3">
+              <button onClick={() => setActiveId(null)} aria-label="Retour" className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 lg:hidden">←</button>
               <UserAvatar path={active ? photoPath(active, version) : null} name={detail?.title ?? active?.title ?? ""} size={40} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-slate-900">{detail?.title ?? active?.title}</p>

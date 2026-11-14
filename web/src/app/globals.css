@@ -163,3 +163,60 @@ body {
 [data-icon="external"] { --i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M15 3h6v6%22/%3E%3Cpath d=%22M10 14 21 3%22/%3E%3Cpath d=%22M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6%22/%3E%3C/svg%3E"); }
 [data-icon="eye"] { --i: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%223%22/%3E%3C/svg%3E"); }
 
+/* ===== APP LOOK ===== */
+/* Phones and tablets: same look as the EduNex mobile app (Material 3: flat cards of radius 16, 48 px controls of radius 12). */
+@media (max-width: 1023.98px) {
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+  /* flat surfaces */
+  main [class*="shadow-"] { box-shadow: none !important; }
+  main section.rounded-2xl, main article.rounded-2xl, main form.rounded-2xl { border-radius: 16px; }
+  main section.p-6, main article.p-6, main form.p-6, main section.p-5, main article.p-5, main div.rounded-2xl.p-6, main div.rounded-2xl.p-5 { padding: 16px; }
+
+  /* the app bar already shows the title of the page */
+  main[data-title-shown="true"] .page-title { display: none; }
+
+  /* fields: outlined, 48 px, radius 12, 16 px text (no zoom on iPhone) */
+  main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  main select, main textarea { min-height: 48px; border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+  main input:not([type="checkbox"]):not([type="radio"]):focus, main select:focus, main textarea:focus {
+    border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; outline: none;
+  }
+  main input[type="checkbox"], main input[type="radio"] { width: 20px; height: 20px; }
+
+  /* buttons: filled 48 px, outlined 44 px */
+  main button[class*="bg-blue-600"], main a[class*="bg-blue-600"] {
+    min-height: 48px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; padding-inline: 20px;
+  }
+  main form button[type="submit"][class*="bg-blue-600"] { width: 100%; }
+  main button[class*="border-slate-200"]:not([class*="w-full"]), main a[class*="border-slate-200"]:not([class*="w-full"]) {
+    min-height: 44px; border-radius: 12px; font-weight: 600; font-size: 14px;
+  }
+
+  /* tables become lists of cards */
+  main .overflow-x-auto:has(> table:not([data-keep-table])) { border: 0 !important; background: transparent !important; overflow: visible; border-radius: 0; }
+  main table:not([data-keep-table]) { display: block; width: 100%; }
+  main table:not([data-keep-table]) thead { display: none; }
+  main table:not([data-keep-table]) tbody { display: block; }
+  main table:not([data-keep-table]) tr {
+    display: block; margin-bottom: 12px; padding: 12px 14px; border-radius: 16px;
+    border: 1px solid var(--color-slate-200, #e2e8f0); background: var(--color-white, #fff);
+  }
+  main table:not([data-keep-table]) td { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 5px 0 !important; text-align: end; }
+  main table:not([data-keep-table]) td[data-label]::before {
+    content: attr(data-label); flex: none; max-width: 45%; font-size: 12px; font-weight: 600; text-align: start; color: var(--color-slate-500, #64748b);
+  }
+  main table:not([data-keep-table]) td:first-child { display: block; text-align: start; font-size: 14.5px; font-weight: 700; padding-bottom: 8px !important; }
+  main table:not([data-keep-table]) td:first-child::before { content: none; }
+  main table:not([data-keep-table]) td[data-actions] { flex-wrap: wrap; justify-content: flex-end; padding-top: 10px !important; }
+  main table:not([data-keep-table]) td[colspan] { display: block; text-align: center; }
+
+  /* dialogs become bottom sheets */
+  .fixed.inset-0.z-40 { align-items: flex-end; padding: 0; }
+  .fixed.inset-0.z-40 > div {
+    max-width: 100%; width: 100%; border-radius: 28px 28px 0 0; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  .fixed.inset-0.z-40 > div::before {
+    content: ""; display: block; width: 32px; height: 4px; margin: 0 auto 14px; border-radius: 4px; background: var(--color-slate-200, #cbd5e1);
+  }
+}
