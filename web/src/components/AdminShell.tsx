@@ -19,6 +19,7 @@ const nav: NavItem[] = [
   { href: "/admin/messages", label: "Messagerie" },
   { href: "/admin/knowledge", label: "Base de connaissances" },
   { href: "/admin/requests", label: "Demandes de documents" },
+  { href: "/admin/certificates", label: "Certificats médicaux" },
   { href: "/admin/internships", label: "Stages et soutenances" },
   { href: "/admin/absences", label: "Absences des enseignants" },
   

@@ -10,16 +10,16 @@ export const PRIMARY: Record<string, string[]> = {
 
 /** Order of the "Plus" page (the app's order). */
 export const MORE_ORDER: Record<string, string[]> = {
-  ROLE_STUDENT: ["subjects", "attendance", "elimination", "exams", "grades", "internship", "requests", "notifications", "profile"],
+  ROLE_STUDENT: ["subjects", "attendance", "certificates", "elimination", "exams", "grades", "internship", "requests", "notifications", "profile"],
   ROLE_PROFESSOR: ["subjects", "classes", "internships", "exams", "delegated/grades", "delegated/timetable", "requests", "notifications", "profile"],
-  ROLE_ADMIN_AGENT: ["professors", "students", "classes", "subjects", "enrollments", "internships", "grades", "exams", "agents", "elimination", "knowledge", "absences", "notifications", "profile"],
+  ROLE_ADMIN_AGENT: ["professors", "students", "classes", "subjects", "enrollments", "internships", "grades", "exams", "agents", "elimination", "certificates", "knowledge", "absences", "notifications", "profile"],
   ROLE_PLATFORM_ADMIN: ["roles", "permissions", "user-rights", "settings", "mail", "profile"],
 };
 
 const LABELS: Record<string, Record<string, string>> = {
-  ROLE_STUDENT: { dashboard: "Accueil", courses: "Mes cours", timetable: "Emploi du temps", assistant: "Assistant IA", subjects: "Mes matières", attendance: "Absences", elimination: "Seuil d'absences", exams: "Mes examens", grades: "Notes", internship: "Mon stage", requests: "Demandes de documents", notifications: "Notifications", profile: "Mon profil" },
+  ROLE_STUDENT: { dashboard: "Accueil", courses: "Mes cours", timetable: "Emploi du temps", assistant: "Assistant IA", subjects: "Mes matières", attendance: "Absences", certificates: "Certificats médicaux", elimination: "Seuil d'absences", exams: "Mes examens", grades: "Notes", internship: "Mon stage", requests: "Demandes de documents", notifications: "Notifications", profile: "Mon profil" },
   ROLE_PROFESSOR: { dashboard: "Accueil", courses: "Mes cours", attendance: "Présences", timetable: "Emploi du temps", subjects: "Mes matières", classes: "Mes classes", internships: "Stages et soutenances", exams: "Surveillance des examens", "delegated/grades": "Saisie des notes", "delegated/timetable": "Gestion des emplois du temps", requests: "Demandes de documents", notifications: "Notifications", profile: "Mon profil" },
-  ROLE_ADMIN_AGENT: { dashboard: "Accueil", timetables: "Emplois du temps", announcements: "Annonces", requests: "Demandes", professors: "Professeurs", students: "Étudiants", classes: "Classes", subjects: "Matières", enrollments: "Inscriptions", internships: "Stages et soutenances", grades: "Notes", exams: "Examens et surveillance", agents: "Administrateurs", elimination: "Éliminations", knowledge: "Base de connaissances", absences: "Absences des enseignants", notifications: "Notifications", profile: "Mon profil" },
+  ROLE_ADMIN_AGENT: { dashboard: "Accueil", timetables: "Emplois du temps", announcements: "Annonces", requests: "Demandes", professors: "Professeurs", students: "Étudiants", classes: "Classes", subjects: "Matières", enrollments: "Inscriptions", internships: "Stages et soutenances", grades: "Notes", exams: "Examens et surveillance", agents: "Administrateurs", elimination: "Éliminations", certificates: "Certificats médicaux", knowledge: "Base de connaissances", absences: "Absences des enseignants", notifications: "Notifications", profile: "Mon profil" },
   ROLE_PLATFORM_ADMIN: { dashboard: "Accueil", universities: "Universités", logs: "Journal", notifications: "Notifications", roles: "Rôles", permissions: "Permissions", "user-rights": "Droits par personne", settings: "Paramètres", mail: "E-mails", profile: "Mon profil" },
 };
 
@@ -72,7 +72,7 @@ const ICONS: Record<string, ReactNode> = {
 
 const ICON_OF: Record<string, string> = {
   dashboard: "dashboard", courses: "book", timetable: "calendar", timetables: "calendar", assistant: "sparkles", subjects: "grid",
-  elimination: "alert", exams: "clipboard", grades: "star", internship: "briefcase", internships: "briefcase", requests: "file",
+  elimination: "alert", exams: "clipboard", grades: "star", internship: "briefcase", internships: "briefcase", requests: "file", certificates: "file",
   notifications: "bell", profile: "user", classes: "users", professors: "cap", students: "users", enrollments: "userCheck",
   announcements: "megaphone", knowledge: "bulb", absences: "userX", universities: "landmark", logs: "history", roles: "shield",
   permissions: "key", "user-rights": "userCog", settings: "sliders", mail: "mail", messages: "chat", agents: "shield",
