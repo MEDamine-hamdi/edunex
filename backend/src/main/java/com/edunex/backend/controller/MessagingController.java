@@ -28,6 +28,7 @@ import java.util.List;
 public class MessagingController {
 
     private final MessagingService service;
+    private final com.edunex.backend.service.MessagingFastService fast;
 
     @GetMapping("/contacts")
     public List<MessagingDto.Contact> contacts(@RequestParam(required = false) String q, Authentication auth) {
@@ -36,7 +37,7 @@ public class MessagingController {
 
     @GetMapping("/conversations")
     public List<MessagingDto.ConvRow> conversations(Authentication auth) {
-        return service.conversationList(auth.getName());
+        return fast.conversationList(auth.getName());
     }
 
     @PostMapping("/conversations/direct")
@@ -106,7 +107,7 @@ public class MessagingController {
 
     @GetMapping("/unread")
     public MessagingDto.UnreadResponse unread(Authentication auth) {
-        return new MessagingDto.UnreadResponse(service.unread(auth.getName()));
+        return new MessagingDto.UnreadResponse(fast.unread(auth.getName()));
     }
 
     @DeleteMapping("/messages/{id}")
