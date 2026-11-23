@@ -20,7 +20,9 @@ import com.edunex.backend.service.ai.GroqClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.security.SecureRandom;
@@ -58,6 +60,9 @@ public class QuizService {
             test understanding, not trivia; the explanation has at most 2 short sentences and says why the answer is right.
             """;
 
+    private record Prepared(Long studentId, Long courseId, String courseTitle, String subjectName, String text) {
+    }
+
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final StudentAccessService studentAccessService;
@@ -66,6 +71,7 @@ public class QuizService {
     private final GroqClient groq;
     private final QuizAttemptRepository attempts;
     private final CourseCompletionRepository completions;
+    private final PlatformTransactionManager transactionManager;
     private final Map<Long, Deque<Long>> generationLog = new ConcurrentHashMap<>();
 
     @Transactional(readOnly = true)
@@ -101,28 +107,38 @@ public class QuizService {
                 .toList();
     }
 
-    @Transactional
+    /**
+     * Deliberately NOT transactional as a whole: the database connection is only held while reading the course and
+     * while saving the quiz, never while the AI is working (that can take 30 seconds).
+     */
     public QuizDto.QuizView generate(String email, Long courseId) {
-        Long studentId = studentId(email);
-        Course course = accessible(studentId, courseId);
-        rate(studentId);
-
-        String text = courseText(course);
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        Prepared p = tx.execute(status -> prepare(email, courseId));
         List<GroqClient.Message> messages = List.of(
                 new GroqClient.Message("system", SYSTEM),
-                new GroqClient.Message("user", "Course: " + course.getTitle() + " (" + course.getSubject().getName() + ")\n"
-                        + "<<<COURSE TEXT\n" + text + "\nCOURSE TEXT>>>\n"
+                new GroqClient.Message("user", "Course: " + p.courseTitle() + " (" + p.subjectName() + ")\n"
+                        + "<<<COURSE TEXT\n" + p.text() + "\nCOURSE TEXT>>>\n"
                         + "Write exactly " + WANTED + " questions."));
         String raw = groq.complete(messages, 4000, "low").content();
         List<Map<String, Object>> questions = parse(raw);
+        return tx.execute(status -> save(p, questions));
+    }
 
+    private Prepared prepare(String email, Long courseId) {
+        Long studentId = studentId(email);
+        Course course = accessible(studentId, courseId);
+        rate(studentId);
+        return new Prepared(studentId, courseId, course.getTitle(), course.getSubject().getName(), courseText(course));
+    }
+
+    private QuizDto.QuizView save(Prepared p, List<Map<String, Object>> questions) {
         QuizAttempt a = new QuizAttempt();
-        a.setCourseId(courseId);
-        a.setStudentId(studentId);
+        a.setCourseId(p.courseId());
+        a.setStudentId(p.studentId());
         a.setQuestionsJson(MAPPER.writeValueAsString(questions));
         a.setTotal(questions.size());
         a = attempts.save(a);
-        return view(a, course.getTitle());
+        return view(a, p.courseTitle());
     }
 
     private String courseText(Course course) {
