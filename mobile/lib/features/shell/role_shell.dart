@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/auth/auth_controller.dart';
 import '../../core/i18n/i18n.dart';
 import '../../core/i18n/language_switcher.dart';
+import '../../core/models.dart';
+import '../../core/notifications/notification_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/widgets/common.dart';
@@ -17,6 +20,7 @@ import '../exams/exams_pages.dart';
 import '../internships/internships_pages.dart';
 import '../messaging/messaging_pages.dart';
 import '../platform/platform_pages.dart';
+import '../platform/universities_page.dart';
 import '../platform/user_rights_page.dart';
 import '../professor/delegated_pages.dart';
 import '../professor/professor_pages.dart';
@@ -86,6 +90,7 @@ List<NavDest> destinationsFor(String role) {
         NavDest('Stages et soutenances', Icons.work_outline, () => const AdminInternshipsPage()),
         NavDest('Notes', Icons.grade_outlined, () => const AdminGradesPage()),
         NavDest('Examens et surveillance', Icons.event_note_outlined, () => const AdminExamsPage(), requires: 'EXAMS_MANAGE'),
+        NavDest('Administrateurs', Icons.admin_panel_settings_outlined, () => const UniversityAdminsPage(), requires: 'ACCOUNTS_MANAGE'),
         NavDest('Éliminations', Icons.person_remove_outlined, () => const AdminEliminationPage(), requires: 'ELIMINATION_MANAGE'),
         NavDest('Base de connaissances', Icons.psychology_outlined, () => const AdminKnowledgePage()),
         NavDest('Absences des enseignants', Icons.person_off_outlined, () => const AdminAbsencesPage()),
@@ -95,7 +100,7 @@ List<NavDest> destinationsFor(String role) {
     default: // ROLE_PLATFORM_ADMIN
       return [
         NavDest('Accueil', Icons.dashboard_outlined, () => const PlatformDashboardPage()),
-        NavDest('Agents', Icons.badge_outlined, () => const PlatformAgentsPage()),
+        NavDest('Universités', Icons.account_balance_outlined, () => const PlatformUniversitiesPage()),
         NavDest('Journal', Icons.history, () => const PlatformLogsPage()),
         NavDest('Notifications', Icons.notifications_none, () => const NotificationsPage()),
         NavDest('Rôles', Icons.admin_panel_settings_outlined, () => const PlatformRolesPage()),
@@ -119,6 +124,8 @@ class _RoleShellState extends State<RoleShell> {
   int index = 0;
   int unread = 0;
   int msgUnread = 0;
+  int? _prevMsg;
+  bool _notifying = false;
   Timer? timer;
   List<String> perms = const [];
   late final List<NavDest> allDests = destinationsFor(widget.user.role);
@@ -130,8 +137,8 @@ class _RoleShellState extends State<RoleShell> {
   void initState() {
     super.initState();
     _loadPerms();
-    _poll();
-    timer = Timer.periodic(const Duration(seconds: 60), (_) => _poll());
+    NotificationService.init().then((_) => _poll());
+    timer = Timer.periodic(const Duration(seconds: 30), (_) => _poll());
   }
 
   @override
@@ -152,11 +159,42 @@ class _RoleShellState extends State<RoleShell> {
       final r = await apiOf(context).get('/api/notifications/unread-count') as Map;
       if (mounted) setState(() => unread = (r['count'] as num?)?.toInt() ?? 0);
     } catch (_) {}
-    if (!hasMessaging) return;
+    if (hasMessaging) {
+      try {
+        final r = await apiOf(context).get('/api/messaging/unread') as Map;
+        final n = (r['unread'] as num?)?.toInt() ?? 0;
+        if (mounted) setState(() => msgUnread = n);
+        if (_prevMsg != null && n > _prevMsg!) {
+          await NotificationService.show(1000000, 'EduNex', tr('Vous avez un nouveau message'));
+        }
+        _prevMsg = n;
+      } catch (_) {}
+    }
+    await _notifyNew();
+  }
+
+  /// Shows a system notification for every unread server notification we have not shown yet.
+  Future<void> _notifyNew() async {
+    if (!NotificationService.supported || unread == 0 || _notifying || !mounted) return;
+    _notifying = true;
     try {
-      final r = await apiOf(context).get('/api/messaging/unread') as Map;
-      if (mounted) setState(() => msgUnread = (r['unread'] as num?)?.toInt() ?? 0);
-    } catch (_) {}
+      final key = 'notif_last_id_${widget.user.id}';
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      final list = listOf(await apiOf(context).get('/api/notifications'), NotificationItem.fromJson);
+      final maxId = list.fold<int>(0, (m, n) => n.id > m ? n.id : m);
+      final last = prefs.getInt(key);
+      if (last != null) {
+        final fresh = list.where((n) => n.id > last && !n.read).toList()..sort((a, b) => a.id.compareTo(b.id));
+        for (final n in fresh.take(5)) {
+          await NotificationService.show(n.id, 'EduNex', n.message);
+        }
+      }
+      if (last == null || maxId > last) await prefs.setInt(key, maxId);
+    } catch (_) {
+    } finally {
+      _notifying = false;
+    }
   }
 
   void _openMessages() {

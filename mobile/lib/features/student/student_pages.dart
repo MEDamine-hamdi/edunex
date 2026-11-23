@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Text;
 
 import '../../core/models.dart';
+import '../quiz/quiz_pages.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common.dart';
 
@@ -175,7 +176,7 @@ class _StudentCoursesPageState extends State<StudentCoursesPage> {
               ]),
             ),
           if (items.isEmpty) const EmptyState('Aucun cours', icon: Icons.menu_book_outlined),
-          for (final c in items) CourseCard(c),
+          for (final c in items) CourseCard(c, actions: FinishCourseButton(courseId: c.id, title: c.title)),
         ]);
       },
     );

@@ -39,7 +39,7 @@ class EduLogo extends StatelessWidget {
       ),
       if (withText) ...[
         SizedBox(width: size * 0.3),
-        Text('EduTEK',
+        Text('EduNex',
             style: TextStyle(
                 fontSize: size * 0.58,
                 fontWeight: FontWeight.w900,

@@ -97,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         const Text('Connexion', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
                         const SizedBox(height: 4),
-                        Text('Accédez à votre espace EduTEK',
+                        Text('Accédez à votre espace EduNex',
                             style: TextStyle(color: Theme.of(context).hintColor)),
                         const SizedBox(height: 20),
                         if (auth.notice != null)
