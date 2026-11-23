@@ -192,6 +192,9 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
       <ShellContext.Provider value={{ moreItems, logout }}>
         {/* The window never scrolls: bars stay in place, only <main> scrolls */}
         <div className="flex h-dvh flex-col overflow-hidden bg-slate-50 dark:bg-black">
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[100] focus:rounded-xl focus:bg-blue-600 focus:px-4 focus:py-2 focus:font-bold focus:text-white">
+            Aller au contenu
+          </a>
           {/* ---------- phone and tablet: the app bar ---------- */}
           <header
             className="flex h-14 shrink-0 items-center border-b border-slate-200 bg-white ps-2 pe-1 lg:hidden"
@@ -266,6 +269,8 @@ export function RoleShell({ allowedRole, badge, badgeClass, nav, children }: Pro
 
             <main
               ref={mainRef}
+              id="main-content"
+              tabIndex={-1}
               data-title-shown={titleShown ? "true" : "false"}
               className={`min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 lg:p-6 ${showBottomNav ? "pb-6" : "pb-10"} lg:pb-6`}
             >

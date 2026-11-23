@@ -220,3 +220,16 @@ body {
     content: ""; display: block; width: 32px; height: 4px; margin: 0 auto 14px; border-radius: 4px; background: var(--color-slate-200, #cbd5e1);
   }
 }
+
+/* ===== ACCESSIBILITY ===== */
+:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 0; }
+main:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-spin), *:not(.animate-spin)::before, *:not(.animate-spin)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

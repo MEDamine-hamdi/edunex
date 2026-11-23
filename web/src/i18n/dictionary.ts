@@ -201,6 +201,7 @@ const ROWS: Row[] = [
   ["Importer un emploi du temps", "Import a timetable", "استيراد جدول حصص"],
   ["Analyser le PDF", "Analyze the PDF", "تحليل ملف PDF"],
   ["Créer les séances", "Create the sessions", "إنشاء الحصص"],
+  ["Aller au contenu", "Skip to content", "انتقل إلى المحتوى"],
   ["Plus", "More", "المزيد"],
   ["Langue", "Language", "اللغة"],
   ["Thème", "Theme", "المظهر"],
